@@ -56,13 +56,13 @@ export default async function DriverRuns({ searchParams }: { searchParams: Promi
         </Panel>
       )}
 
-      <h2 className="mb-3 mt-8 font-display text-2xl font-bold">Pay statements</h2>
+      <h2 className="mb-3 mt-8 text-lg font-bold">Pay statements</h2>
       {(settlements ?? []).length === 0 ? <Empty>No pay statements yet.</Empty> : (
         <Table caption="Pay statements" head={["Driver", "Period", "Cash advances", "Status", "Paid on"]}>
           {(settlements ?? []).map((s: any) => (
             <tr key={s.id}>
               <td><Link className="link font-semibold" href={`/portal/driver-runs/${s.id}`}>{s.drivers?.full_name}</Link></td>
-              <td>{date(s.period_start)} – {date(s.period_end)}</td>
+              <td>{date(s.period_start)} to {date(s.period_end)}</td>
               <td>{money(s.cash_advances)}</td>
               <td><Badge status={s.status === "paid" ? "paid" : "partial"} label={s.status === "paid" ? "Paid" : "Open"} /></td>
               <td>{date(s.paid_on)}</td>

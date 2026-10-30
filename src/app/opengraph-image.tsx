@@ -9,7 +9,7 @@ export const contentType = "image/png";
 export default async function OgImage() {
   const [font, logo] = await Promise.all([
     readFile(join(process.cwd(), "src/assets/barlow-condensed-latin-800-normal.woff")),
-    readFile(join(process.cwd(), "public/brand/dt-logo-nophone.png")),
+    readFile(join(process.cwd(), "public/brand/dt-logo-graygold.png")),
   ]);
   const logoSrc = `data:image/png;base64,${logo.toString("base64")}`;
   return new ImageResponse(

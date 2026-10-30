@@ -25,14 +25,14 @@ export default async function StatusPicker() {
           <form key={s} action={setMyStatus}>
             <input type="hidden" name="status" value={s} />
             <button className={`w-full rounded-md border-2 p-4 text-left ${d?.status === s ? "border-gold-fill" : "border-field"} hover:border-gold`}>
-              <span className="block font-display text-2xl font-bold">{DRIVER_STATUS[s]}{d?.status === s ? " (current)" : ""}</span>
+              <span className="block text-lg font-bold">{DRIVER_STATUS[s]}{d?.status === s ? " (current)" : ""}</span>
               <span className="text-muted">{HINT[s]}</span>
             </button>
           </form>
         ))}
         <form action={setMyStatus} className="rounded-md border-2 border-field p-4">
           <input type="hidden" name="status" value="other" />
-          <label htmlFor="note" className="block font-display text-2xl font-bold">{DRIVER_STATUS.other}{d?.status === "other" ? " (current)" : ""}</label>
+          <label htmlFor="note" className="block text-lg font-bold">{DRIVER_STATUS.other}{d?.status === "other" ? " (current)" : ""}</label>
           <span id="note-hint" className="text-muted">{HINT.other}</span>
           <input id="note" name="note" className="input mt-2" maxLength={200} defaultValue={d?.status === "other" ? d.status_note ?? "" : ""} aria-describedby="note-hint" />
           <button className="btn btn-gold mt-3">Set status</button>

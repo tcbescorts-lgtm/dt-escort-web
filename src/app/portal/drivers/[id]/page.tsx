@@ -16,7 +16,7 @@ const EQUIPMENT: [string, string][] = [
 const CERT: Record<string, string> = { pevo: "PEVO", state_certification: "State certification", pilot_car_permit: "Pilot car permit", insurance: "Insurance", other: "Other" };
 
 function Exp({ d }: { d: string | null }) {
-  if (!d) return <span className="text-muted">—</span>;
+  if (!d) return <span className="text-muted">-</span>;
   const n = daysUntil(d);
   return <span>{date(d)} {n <= 60 && <Badge status={n < 0 ? "failed" : n <= 7 ? "overdue" : "partial"} label={n < 0 ? "Expired" : `${n} days`} />}</span>;
 }
@@ -79,7 +79,7 @@ export default async function DriverDetail({ params, searchParams }: { params: P
           <F name="license_expires" label="Expires" type="date" defaultValue={d.license_expires} />
         </Fieldset>
         <fieldset className="rounded-md border border-rule p-4 md:p-5">
-          <legend className="px-1 font-display text-xl font-bold">Positions and equipment</legend>
+          <legend className="px-1 text-base font-bold">Positions and equipment</legend>
           <p className="font-semibold">Positions qualified for</p>
           <div className="mt-1 flex flex-wrap gap-x-5">{Object.entries(POSITIONS).map(([v, l]) => (
             <label key={v} className="check min-h-11 items-center"><input type="checkbox" name="positions" value={v} defaultChecked={(d.positions ?? []).includes(v)} /><span>{l}</span></label>))}</div>

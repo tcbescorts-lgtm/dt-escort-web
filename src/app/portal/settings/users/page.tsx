@@ -19,7 +19,7 @@ export default async function Users({ searchParams }: { searchParams: Promise<{ 
       <Table caption="Users" head={["Name", "Email", "Role", "Active", "Created", ""]}>
         {(data ?? []).map((u) => (
           <tr key={u.id}>
-            <td>{u.full_name || "—"}</td><td>{u.email}</td>
+            <td>{u.full_name || "-"}</td><td>{u.email}</td>
             <td colSpan={2}>
               <form action={updateUser} className="flex flex-wrap items-center gap-2" id={`u-${u.id}`}>
                 <input type="hidden" name="id" value={u.id} />

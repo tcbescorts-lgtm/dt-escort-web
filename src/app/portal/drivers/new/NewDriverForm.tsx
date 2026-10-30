@@ -41,7 +41,7 @@ export default function NewDriverForm() {
         <F name="split_pct" label="Driver split %" type="number" step="0.01" defaultValue={40} hint="Share of (load total − QP fee − gas)" />
       </Fieldset>
       <fieldset className="rounded-md border border-rule p-4">
-        <legend className="px-1 font-display text-xl font-bold">Positions qualified for</legend>
+        <legend className="px-1 text-base font-bold">Positions qualified for</legend>
         <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
           {Object.entries(POSITIONS).map(([v, l]) => (
             <label key={v} className="check min-h-11 items-center"><input type="checkbox" name="positions" value={v} /><span>{l}</span></label>

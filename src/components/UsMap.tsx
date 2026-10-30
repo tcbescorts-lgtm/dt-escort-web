@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useId, useState } from "react";
 import geo from "@/lib/us-map.json";
-import { STATES_48, company } from "@/lib/site";
-import { ArrowIcon, PhoneIcon } from "./Icons";
+import { STATES_48 } from "@/lib/site";
 
 const NAMES = Object.fromEntries(STATES_48) as Record<string, string>;
 const SMALL = new Set(["RI", "DE", "CT", "NJ", "MD", "MA", "VT", "NH"]);
@@ -22,7 +21,7 @@ export default function UsMap() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)] lg:items-center">
-      <div className="panel relative overflow-hidden p-3 sm:p-5">
+      <div className="relative">
         <svg
           viewBox="0 0 975 610"
           role="img"
@@ -40,7 +39,7 @@ export default function UsMap() {
                   onClick={() => setSel(s.abbr)}
                   onMouseEnter={() => setHover(s.abbr)}
                   onMouseLeave={() => setHover(null)}
-                  className="cursor-pointer transition-colors duration-150"
+                  className="cursor-pointer"
                   style={{
                     fill: on
                       ? "var(--gold-fill)"
@@ -84,7 +83,7 @@ export default function UsMap() {
         </p>
       </div>
 
-      <div className="panel panel-gold p-5">
+      <div className="border-t border-rule pt-5 lg:border-t-0 lg:border-l lg:pl-8 lg:pt-0">
         <label htmlFor={selectId} className="text-sm font-semibold">
           Choose a state
         </label>
@@ -102,22 +101,16 @@ export default function UsMap() {
         </select>
 
         <div aria-live="polite" className="mt-5">
-          <p className="eyebrow">{sel === HOME ? "Home state" : "Covered"}</p>
-          <h3 className="display-3 mt-1">{name}</h3>
+          <h3 className="display-3">{name}{sel === HOME ? " (home state)" : ""}</h3>
           <p className="mt-1.5 text-sm text-muted">
             {sel === HOME
               ? "Our base is in Jackson, so Mississippi moves are close to home."
               : `We run lead, chase and specialty escorts in ${name}, with operators certified for its rules.`}
           </p>
         </div>
-        <div className="mt-5 flex flex-col gap-2">
-          <Link href={`/quote?state=${sel}`} className="btn btn-gold w-full">
-            Quote a load in {sel} <ArrowIcon />
-          </Link>
-          <a href={company.telHref} className="btn btn-line w-full">
-            <PhoneIcon /> {company.phoneDisplay}
-          </a>
-        </div>
+        <Link href={`/quote?state=${sel}`} className="btn btn-gold mt-5 w-full">
+          Request a quote in {name}
+        </Link>
       </div>
     </div>
   );

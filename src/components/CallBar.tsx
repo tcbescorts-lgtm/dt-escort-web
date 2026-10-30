@@ -1,17 +1,16 @@
-import Link from "next/link";
 import { company } from "@/lib/site";
 import { PhoneIcon } from "./Icons";
 
-/** Sticky bottom bar on phones: call dispatch in one tap. */
+/** One phone button, fixed at the lower left on every public page. */
 export default function CallBar() {
   return (
-    <nav aria-label="Quick contact" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 gap-2 border-t border-rule bg-bg/95 p-2.5 backdrop-blur md:hidden">
-      <a href={company.telHref} className="btn btn-gold w-full whitespace-nowrap !px-2">
-        <PhoneIcon /> Call Dispatch
-      </a>
-      <Link href="/quote" className="btn btn-line w-full whitespace-nowrap !px-2">
-        Request a Quote
-      </Link>
-    </nav>
+    <a
+      href={company.telHref}
+      aria-label={`Call dispatch, ${company.phoneDisplay}`}
+      title={`Call dispatch ${company.phoneDisplay}`}
+      className="fixed bottom-4 left-4 z-30 grid h-13 w-13 place-items-center rounded-lg border-2 border-gold-edge bg-gold-fill text-on-gold shadow-[0_8px_24px_-6px_rgba(0,0,0,0.55)] hover:brightness-110 md:bottom-6 md:left-6"
+    >
+      <PhoneIcon size={24} />
+    </a>
   );
 }

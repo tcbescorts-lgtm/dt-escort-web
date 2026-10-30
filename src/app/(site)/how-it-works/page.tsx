@@ -29,7 +29,7 @@ export default function HowItWorks() {
         <ol className="border-t border-rule">
           {steps.map((s, i) => (
             <li key={s.title} className="grid gap-3 border-b border-rule py-8 md:grid-cols-[6rem_minmax(0,1fr)_minmax(0,2fr)] md:gap-8">
-              <span aria-hidden="true" className="font-display text-6xl font-extrabold leading-none text-gold">{i + 1}</span>
+              <span aria-hidden="true" className="font-bold text-gold">{i + 1}</span>
               <h2 className="display-3">
                 <span className="sr-only">Step {i + 1}: </span>
                 {s.title}

@@ -21,7 +21,7 @@ export default function Contact() {
             <div>
               <dt className="flex items-center gap-2 font-semibold text-muted"><PhoneIcon /> Phone</dt>
               <dd className="mt-1">
-                <a href={company.telHref} className="font-display text-3xl font-bold text-gold underline-offset-4 hover:underline">
+                <a href={company.telHref} className="text-2xl font-bold text-gold underline-offset-4 hover:underline">
                   {company.phoneDisplay}
                 </a>
               </dd>

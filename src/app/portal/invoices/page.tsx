@@ -22,9 +22,9 @@ export default async function Invoices({ searchParams }: { searchParams: Promise
   const age = (i: any) => (i.due_date ? Math.floor((Date.now() - new Date(i.due_date + "T12:00:00").getTime()) / 86400000) : 0);
   const buckets = [
     ["Current", open.filter((i) => age(i) <= 0)],
-    ["1–30 days", open.filter((i) => age(i) > 0 && age(i) <= 30)],
-    ["31–60 days", open.filter((i) => age(i) > 30 && age(i) <= 60)],
-    ["61–90 days", open.filter((i) => age(i) > 60 && age(i) <= 90)],
+    ["1-30 days", open.filter((i) => age(i) > 0 && age(i) <= 30)],
+    ["31-60 days", open.filter((i) => age(i) > 30 && age(i) <= 60)],
+    ["61-90 days", open.filter((i) => age(i) > 60 && age(i) <= 90)],
     ["Over 90 days", open.filter((i) => age(i) > 90)],
   ] as [string, any[]][];
   const bal = (l: any[]) => l.reduce((a, i) => a + Number(i.total) - Number(i.amount_paid), 0);

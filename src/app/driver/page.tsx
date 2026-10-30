@@ -26,7 +26,7 @@ export default async function DriverHome() {
   const Card = ({ a, title }: { a: any; title: string }) => (
     <section aria-label={title} className="rounded-md border border-rule bg-surface p-4">
       <p className="text-sm text-muted">{title}</p>
-      <Link href={`/driver/loads/${a.loads.id}`} className="mt-1 block font-display text-2xl font-bold underline-offset-4 hover:underline">{a.loads.pickup} → {a.loads.dropoff}</Link>
+      <Link href={`/driver/loads/${a.loads.id}`} className="mt-1 block text-lg font-bold underline-offset-4 hover:underline">{a.loads.pickup} → {a.loads.dropoff}</Link>
       <p className="text-muted">{a.loads.load_no} · {date(a.loads.load_date)}{a.position ? ` · ${POSITIONS[a.position]}` : ""}</p>
       {!a.acknowledged_at && <p className="mt-2 font-medium text-gold">Not acknowledged yet. Open it to confirm.</p>}
     </section>
@@ -37,7 +37,7 @@ export default async function DriverHome() {
       <section aria-label="Your status" className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-rule p-4">
         <div>
           <p className="text-sm text-muted">Your status</p>
-          <p className="font-display text-2xl font-bold">{d?.status ? DRIVER_STATUS[d.status] : "Not set"}</p>
+          <p className="text-lg font-bold">{d?.status ? DRIVER_STATUS[d.status] : "Not set"}</p>
           {d?.status_note && <p className="text-muted">{d.status_note}</p>}
         </div>
         <Link href="/driver/status" className="btn btn-line">Change</Link>
@@ -53,7 +53,7 @@ export default async function DriverHome() {
 
       <section aria-label="Earnings" className="rounded-md border border-rule p-4">
         <p className="text-sm text-muted">Your pay from submitted runs this month</p>
-        <p className="font-display text-3xl font-bold">{money(month)}</p>
+        <p className="text-xl font-bold">{money(month)}</p>
         <Link href="/driver/pay" className="link mt-1 inline-block">See pay details</Link>
       </section>
     </div>

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Actions, Container, CtaBand } from "@/components/Blocks";
-import { BadgeIcon, CheckIcon, ClockIcon, MapIcon, PhoneIcon, ShieldIcon } from "@/components/Icons";
+import Image from "next/image";
 import UsMap from "@/components/UsMap";
-import { claims, company, positions } from "@/lib/site";
+import { claims, positions } from "@/lib/site";
 import { cargoGroups, faqs, steps } from "@/lib/content";
 import { pageMeta } from "@/lib/seo";
 
@@ -13,64 +13,46 @@ export const metadata = pageMeta({
   path: "/",
 });
 
-const trust = [
-  { text: claims.coverage48.text, Icon: MapIcon },
-  { text: claims.insurance1m.text, Icon: ShieldIcon },
-  { text: claims.certified.text, Icon: BadgeIcon },
-  { text: claims.available247.text, Icon: ClockIcon },
-];
+const trust = [claims.coverage48.text, claims.insurance1m.text, claims.certified.text, claims.available247.text];
 
 export default function Home() {
   const [lead, chase] = positions;
   const extra = positions.slice(2);
   return (
     <>
-      <div className="backdrop border-b border-rule">
-        <Container className="pt-10 pb-12 md:pt-16 md:pb-16">
-          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] lg:gap-14">
+      <div className="border-b border-rule bg-surface">
+        <Container className="py-10 md:py-14">
+          <div className="grid items-center gap-8 md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] md:gap-12">
             <div>
-              <p className="eyebrow">Pilot car and oversize load escorts</p>
-              <h1 className="display-1 mt-3 max-w-2xl">Pilot car escorts for oversize loads, in all 48 states.</h1>
+              <h1 className="display-1 max-w-2xl">Pilot car escorts for oversize and overweight loads</h1>
               <p className="lede mt-4">
-                Lead and chase escorts out of Jackson, Mississippi, for heavy haul and project cargo.
-                Dispatch answers around the clock.
+                Lead, chase, high pole, steer and 3rd car escorts based in Jackson, Mississippi. PEVO-certified
+                operators with $1,000,000 insurance, running loads in all 48 contiguous states. Dispatch
+                answers 24 hours a day.
               </p>
-              <Actions className="mt-7" />
+              <Actions className="mt-6" />
             </div>
-
-            <aside aria-label="Dispatch" className="panel panel-gold p-5 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)] sm:p-6">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-sm font-semibold">Dispatch</p>
-                <p className="flex items-center gap-2 text-xs font-semibold text-success">
-                  <span aria-hidden="true" className="h-2 w-2 rounded-full bg-success" /> Open 24/7
-                </p>
-              </div>
-              <a href={company.telHref} className="mt-3 flex items-center gap-2 font-display text-[1.7rem] font-bold leading-none text-gold hover:underline underline-offset-4">
-                <PhoneIcon size={22} /> {company.phoneDisplay}
-              </a>
-              <p className="mt-2 text-sm text-muted">{company.email}</p>
-              <hr className="my-4 border-rule" />
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Positions we run</p>
-              <ul className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-                {positions.map((p) => (
-                  <li key={p.slug} className="flex items-center gap-2">
-                    <span className="text-gold"><CheckIcon /></span>
-                    {p.name}
-                  </li>
-                ))}
-              </ul>
-            </aside>
+            <Image
+              src="/brand/dt-logo-graygold.png"
+              alt="D & T Escort Service logo"
+              width={372}
+              height={372}
+              priority
+              className="mx-auto hidden w-full max-w-[19rem] md:block"
+            />
           </div>
         </Container>
       </div>
 
-      <section aria-label="At a glance">
+      <section aria-label="At a glance" className="border-b border-rule">
         <Container>
-          <ul className="grid grid-cols-2 gap-px overflow-hidden border-x border-b border-rule bg-rule lg:grid-cols-4">
-            {trust.map(({ text, Icon }) => (
-              <li key={text} className="flex items-center gap-3 bg-bg px-4 py-4 sm:px-5">
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-rule text-gold"><Icon /></span>
-                <span className="stat-num">{text}</span>
+          <ul className="grid grid-cols-2 lg:grid-cols-4">
+            {trust.map((t, i) => (
+              <li
+                key={t}
+                className={`py-4 pr-4 text-[0.95rem] font-bold ${i % 2 ? "pl-4 border-l border-rule" : ""} ${i > 0 ? "lg:pl-5 lg:border-l lg:border-rule" : ""} ${i > 1 ? "border-t border-rule lg:border-t-0" : ""}`}
+              >
+                {t}
               </li>
             ))}
           </ul>
@@ -79,11 +61,10 @@ export default function Home() {
 
       <section aria-labelledby="services-h">
         <Container className="pt-14 md:pt-20">
-          <p className="eyebrow">Services</p>
-          <h2 id="services-h" className="display-2 mt-2 max-w-3xl">Front and rear escorts, matched to your permit</h2>
-          <div className="mt-8 grid gap-4 md:grid-cols-2">
+          <h2 id="services-h" className="display-2 max-w-3xl">Front and rear escorts, matched to your permit</h2>
+          <div className="mt-6 grid gap-8 md:grid-cols-2 md:gap-12">
             {[lead, chase].map((p) => (
-              <div key={p.slug} className="panel panel-gold p-5 sm:p-6">
+              <div key={p.slug}>
                 <h3 className="display-3">{p.name}</h3>
                 <p className="text-muted text-sm">Also called: {p.aka.toLowerCase()}</p>
                 <p className="mt-3 text-[0.95rem]">{p.summary}</p>
@@ -107,8 +88,7 @@ export default function Home() {
         <Container className="py-12 md:py-16">
           <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-12">
             <div>
-              <p className="eyebrow">Loads</p>
-              <h2 id="cargo-h" className="display-2 mt-2">What we escort</h2>
+              <h2 id="cargo-h" className="display-2">What we escort</h2>
               <p className="mt-4 text-muted">
                 Anything that runs on an oversize or overweight permit. These are the loads we see most.
               </p>
@@ -130,13 +110,12 @@ export default function Home() {
 
       <section aria-labelledby="how-h">
         <Container className="pt-14 md:pt-20">
-          <p className="eyebrow">Process</p>
-          <h2 id="how-h" className="display-2 mt-2">How it works</h2>
-          <ol className="mt-8 grid gap-px overflow-hidden rounded-md border border-rule bg-rule sm:grid-cols-2 lg:grid-cols-4">
+          <h2 id="how-h" className="display-2">How it works</h2>
+          <ol className="mt-6 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {steps.map((s, i) => (
-              <li key={s.title} className="bg-bg p-5 sm:p-6">
-                <span aria-hidden="true" className="grid h-9 w-9 place-items-center rounded-full border border-gold-fill font-display text-lg font-bold text-gold">{i + 1}</span>
-                <h3 className="display-3 mt-2">
+              <li key={s.title}>
+                <span aria-hidden="true" className="font-bold text-gold">{String(i + 1).padStart(2, "0")}</span>
+                <h3 className="display-3 mt-1">
                   <span className="sr-only">Step {i + 1}: </span>
                   {s.title}
                 </h3>
@@ -154,8 +133,7 @@ export default function Home() {
         <Container className="pt-14 md:pt-20">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="eyebrow">Coverage</p>
-              <h2 id="coverage-h" className="display-2 mt-2">Coverage in the lower 48</h2>
+              <h2 id="coverage-h" className="display-2">Coverage in the lower 48</h2>
             </div>
             <Link href="/coverage" className="link text-sm">Main corridors</Link>
           </div>
@@ -167,8 +145,7 @@ export default function Home() {
 
       <section aria-labelledby="faq-h">
         <Container className="pt-14 md:pt-20">
-          <p className="eyebrow">FAQ</p>
-          <h2 id="faq-h" className="display-2 mt-2">Common questions</h2>
+          <h2 id="faq-h" className="display-2">Common questions</h2>
           <div className="mt-6 max-w-3xl divide-y divide-rule border-y border-rule">
             {[1, 3, 5, 6].map((i) => faqs[i]).map((f) => (
               <div key={f.q} className="py-4">

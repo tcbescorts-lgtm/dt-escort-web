@@ -23,6 +23,7 @@ export default function PortalNav({ role, unread, pendingSheets }: { role: strin
     { href: "/portal/drivers", label: "Drivers" },
     { href: "/portal/reports", label: "Reports", owner: true },
     { href: "/portal/notifications", label: "Notifications", count: unread },
+    { href: "/portal/search", label: "Search" },
     { href: "/portal/settings", label: "Settings" },
   ];
   const active = (href: string) =>

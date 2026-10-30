@@ -17,7 +17,7 @@ export default async function Settlement({ params }: { params: Promise<{ id: str
   const { data: runs } = await sb.from("driver_runs").select("*").eq("settlement_id", id).order("run_date");
   return (
     <>
-      <PageHead title={`Pay statement · ${(s as any).drivers?.full_name}`} sub={<>{date(s.period_start)} – {date(s.period_end)} · <Badge status={s.status === "paid" ? "paid" : "partial"} label={s.status === "paid" ? `Paid ${date(s.paid_on)}` : "Open"} /></>}
+      <PageHead title={`Pay statement · ${(s as any).drivers?.full_name}`} sub={<>{date(s.period_start)} to {date(s.period_end)} · <Badge status={s.status === "paid" ? "paid" : "partial"} label={s.status === "paid" ? `Paid ${date(s.paid_on)}` : "Open"} /></>}
         actions={<a className="btn btn-line" href={`/portal/driver-runs/export?settlement=${id}`}>Export CSV</a>} />
       <RunsTable rows={(runs ?? []) as any} advances={Number(s.cash_advances)} caption="Runs in this pay statement" />
       {s.status === "open" && (

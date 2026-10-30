@@ -35,7 +35,7 @@ export default function About() {
           </div>
           <div>
             <Image
-              src="/brand/dt-logo-nophone.png"
+              src="/brand/dt-logo-graygold.png"
               alt="D & T Escort Service logo: a black semi with an oversize load banner and a pilot car with an amber light bar, under the words Safe, Reliable, Professional."
               width={372}
               height={372}

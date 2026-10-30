@@ -18,10 +18,10 @@ export default function WhatWeEscort() {
       />
       <Container>
         <nav aria-label="Load types" className="mb-10">
-          <ul className="flex flex-wrap gap-2">
+          <ul className="flex flex-wrap gap-x-5 gap-y-1">
             {cargoGroups.map((g) => (
               <li key={g.id}>
-                <a href={`#${g.id}`} className="inline-flex min-h-11 items-center rounded-full border border-field px-4 hover:border-gold">
+                <a href={`#${g.id}`} className="inline-flex min-h-11 items-center px-1 font-semibold text-gold underline-offset-4 hover:underline">
                   {g.title}
                 </a>
               </li>
@@ -46,7 +46,7 @@ export default function WhatWeEscort() {
           ))}
         </div>
 
-        <section aria-labelledby="superload-h" className="mt-10 rounded-md border border-rule bg-surface p-6 md:p-10">
+        <section aria-labelledby="superload-h" className="mt-10 border-t border-rule pt-8">
           <h2 id="superload-h" className="display-2">Superloads</h2>
           <p className="mt-4 measure">
             Superloads go past a state&apos;s routine oversize limits and move under special permits,

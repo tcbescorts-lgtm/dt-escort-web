@@ -21,7 +21,7 @@ export default async function DriverPay() {
 
       <section aria-labelledby="unpaid" className="mt-5 rounded-md border border-rule p-4">
         <h2 id="unpaid" className="text-lg font-semibold">Not paid out yet</h2>
-        <p className="font-display text-3xl font-bold">{money(sum(unpaid))}</p>
+        <p className="text-xl font-bold">{money(sum(unpaid))}</p>
         <ul className="mt-3 divide-y divide-rule">
           {unpaid.map((r) => (
             <li key={r.run_sheet_id} className="py-2">
@@ -41,10 +41,10 @@ export default async function DriverPay() {
             const total = sum(these) - Number(s.cash_advances);
             return (
               <li key={s.id} className="rounded-md border border-rule p-3">
-                <p className="flex items-center justify-between"><span className="font-semibold">{date(s.period_start)} – {date(s.period_end)}</span>
+                <p className="flex items-center justify-between"><span className="font-semibold">{date(s.period_start)} to {date(s.period_end)}</span>
                   <Badge status={s.status === "paid" ? "paid" : "partial"} label={s.status === "paid" ? `Paid ${date(s.paid_on)}` : "Being processed"} /></p>
                 <p className="text-sm text-muted">{these.length} run{these.length === 1 ? "" : "s"} · runs {money(sum(these))}{Number(s.cash_advances) ? ` − advances ${money(s.cash_advances)}` : ""}</p>
-                <p className="font-display text-2xl font-bold">{money(total)}</p>
+                <p className="text-lg font-bold">{money(total)}</p>
               </li>
             );
           })}

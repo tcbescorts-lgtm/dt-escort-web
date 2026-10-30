@@ -55,7 +55,7 @@ export default async function CustomerDetail({ params, searchParams }: { params:
         </Panel>
       </div>
       <details className="mt-6 rounded-md border border-rule p-4" open={!c.contact_name && !c.email}>
-        <summary className="cursor-pointer font-display text-xl font-bold">Edit customer and rate card</summary>
+        <summary className="cursor-pointer text-base font-bold">Edit customer and rate card</summary>
         <div className="mt-4"><CustomerForm c={c} /></div>
       </details>
     </>

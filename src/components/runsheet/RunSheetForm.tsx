@@ -24,15 +24,6 @@ function Txt({ name, label, def, req, type = "text", hint, step, inputMode }: { 
   );
 }
 
-function Box({ legend, children, cols = 2 }: { legend: string; children: React.ReactNode; cols?: 1 | 2 | 3 }) {
-  return (
-    <fieldset className="rounded-md border border-rule p-4">
-      <legend className="px-1 font-display text-xl font-bold">{legend}</legend>
-      <div className={`mt-2 grid gap-4 ${cols === 1 ? "" : cols === 3 ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2"}`}>{children}</div>
-    </fieldset>
-  );
-}
-
 export default function RunSheetForm({
   mode, load, sheet, driver, extras, files,
 }: { mode: "driver" | "admin"; load: any; sheet: any | null; driver: { id: string; full_name: string }; extras: Extras; files: any[] }) {
@@ -131,6 +122,7 @@ export default function RunSheetForm({
       () => setGeoMsg("Location wasn't shared. You can skip this."),
     );
   };
+  const needsTruck = !readOnly && [v("trucking_company") ?? load.trucking_company, v("truck_driver_name") ?? load.truck_driver_name, v("truck_driver_phone") ?? load.truck_driver_phone].some((x) => !x);
   const statusLabel = status === "draft" ? "Saved, not sent" : status === "submitted" ? "Submitted" : "Approved";
 
   const payRows: [string, string, number, number, number][] = [
@@ -142,19 +134,19 @@ export default function RunSheetForm({
   ];
 
   return (
-    <form ref={formRef} action={action} onChange={snapshot} className="space-y-5" noValidate>
+    <form ref={formRef} action={action} onChange={snapshot} className="space-y-3" noValidate>
       <input type="hidden" name="id" value={sheetId} />
       <input type="hidden" name="load_id" value={load.id} />
       <input type="hidden" name="driver_id" value={driver.id} />
       <input type="hidden" name="legs_json" value={JSON.stringify(legs.map((l) => ({ charged_as: l.charged_as, overnight: l.overnight, leg_date: l.leg_date, miles: l.miles, start_location: l.start_location, end_location: l.end_location })))} />
 
-      <header className="rounded-md border border-rule bg-surface p-4">
+      <header className="border-b border-rule pb-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-display text-2xl font-bold">Run sheet · {load.load_no} · {driver.full_name}</h2>
-          <span className={`rounded-full border px-3 py-0.5 text-sm font-semibold ${status === "approved" ? "border-success text-success" : status === "submitted" ? "border-gold-fill text-gold" : "border-field text-muted"}`}>{statusLabel}</span>
+          <h2 className="text-lg font-bold">Run sheet · {load.load_no} · {driver.full_name}</h2>
+          <span className={`rounded border px-2 py-0.5 text-xs font-semibold ${status === "approved" ? "border-success text-success" : status === "submitted" ? "border-gold-fill text-gold" : "border-field text-muted"}`}>{statusLabel}</span>
         </div>
-        <p className="mt-1 text-muted">
-          {[load.truck_driver_name && `Truck driver ${load.truck_driver_name}`, load.truck_driver_phone, load.trucking_company, load.truck_number && `truck #${load.truck_number}`].filter(Boolean).join(" · ") || "No truck details on the load yet."}
+        <p className="mt-0.5 text-sm text-muted">
+          {[load.pickup && load.dropoff && `${load.pickup} to ${load.dropoff}`, load.truck_driver_name && `Truck driver ${load.truck_driver_name}`, load.truck_driver_phone, load.trucking_company, load.truck_number && `truck #${load.truck_number}`].filter(Boolean).join(" · ") || "No truck details on the load yet."}
         </p>
         {sheet?.admin_comment && <p className="mt-2 rounded-md border border-gold-fill p-2"><span className="font-semibold">Dispatch note:</span> {sheet.admin_comment}</p>}
       </header>
@@ -177,48 +169,51 @@ export default function RunSheetForm({
       )}
       {readOnly && <p className="rounded-md border border-field p-3">This run sheet has been {status}. Ask dispatch if something needs to change.</p>}
 
-      <fieldset disabled={readOnly} className="space-y-5">
-        <p className="text-muted">Fields marked <span className="text-gold">*</span> are required before you mark the run complete.</p>
-        <Box legend="Load" cols={2}>
-          <Txt name="invoice_date" label="Invoice date" type="date" req def={v("invoice_date") ?? new Date().toISOString().slice(0, 10)} />
-          <Txt name="load_number" label="Load number" def={v("load_number") ?? load.order_no ?? load.load_no} />
-          <Txt name="trucking_company" label="Trucking company" req def={v("trucking_company") ?? load.trucking_company} />
-          <Txt name="truck_number" label="Truck number" def={v("truck_number") ?? load.truck_number} />
-          <Txt name="trailer_number" label="Trailer number" def={v("trailer_number")} />
-          <Txt name="truck_driver_name" label="Truck driver's name" req def={v("truck_driver_name") ?? load.truck_driver_name} />
-          <Txt name="truck_driver_phone" label="Truck driver's contact number" type="tel" req def={v("truck_driver_phone") ?? load.truck_driver_phone} />
-          <Txt name="invoice_email" label="Email address for invoice" type="email" hint="Company email, if provided" def={v("invoice_email") ?? load.invoice_email} />
-        </Box>
+      <fieldset disabled={readOnly} className="space-y-3">
+        <input type="hidden" name="start_location" value={legs[0]?.start_location ?? ""} />
+        <input type="hidden" name="end_location" value={legs[legs.length - 1]?.end_location ?? ""} />
+        <details open={needsTruck} className="group border-t border-rule pt-3">
+          <summary className="flex min-h-11 cursor-pointer list-none flex-wrap items-center gap-x-2 text-sm">
+            <span aria-hidden="true" className="text-muted group-open:rotate-90">▸</span>
+            <span className="font-bold">🚚 Truck, invoice and load size</span>
+            <span className="text-muted">{needsTruck ? "Fill in the missing truck details" : [v("trucking_company") ?? load.trucking_company, v("truck_driver_name") ?? load.truck_driver_name].filter(Boolean).join(" · ")}</span>
+          </summary>
+          <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-2 lg:grid-cols-4">
+            <Txt name="trucking_company" label="Trucking company" req def={v("trucking_company") ?? load.trucking_company} />
+            <Txt name="truck_driver_name" label="Truck driver" req def={v("truck_driver_name") ?? load.truck_driver_name} />
+            <Txt name="truck_driver_phone" label="Truck driver phone" type="tel" req def={v("truck_driver_phone") ?? load.truck_driver_phone} />
+            <Txt name="truck_number" label="Truck #" def={v("truck_number") ?? load.truck_number} />
+            <Txt name="trailer_number" label="Trailer #" def={v("trailer_number")} />
+            <Txt name="invoice_date" label="Invoice date" type="date" req def={v("invoice_date") ?? new Date().toISOString().slice(0, 10)} />
+            <Txt name="load_number" label="Load #" def={v("load_number") ?? load.order_no ?? load.load_no} />
+            <Txt name="invoice_email" label="Invoice email" type="email" def={v("invoice_email") ?? load.invoice_email} />
+            <div className="col-span-2 lg:col-span-4"><Txt name="load_description" label="Load description" def={v("load_description")} /></div>
+            <Txt name="height" label="Height" def={v("height") ?? load.height} />
+            <Txt name="width" label="Width" def={v("width") ?? load.width} />
+            <Txt name="length" label="Length" def={v("length") ?? load.length} />
+            <Txt name="weight" label="Weight" def={v("weight") ?? load.weight} />
+          </div>
+        </details>
 
-        <Box legend="Route and load" cols={2}>
-          <Txt name="start_location" label="Starting location" req def={v("start_location") ?? load.pickup} />
-          <Txt name="end_location" label="Ending location" req def={v("end_location") ?? load.dropoff} />
-          <div className="sm:col-span-2"><Txt name="load_description" label="Load description" def={v("load_description")} /></div>
-          <Txt name="height" label="Height" def={v("height") ?? load.height} />
-          <Txt name="width" label="Width" def={v("width") ?? load.width} />
-          <Txt name="length" label="Length" def={v("length") ?? load.length} />
-          <Txt name="weight" label="Weight" def={v("weight") ?? load.weight} />
-        </Box>
-
-        <fieldset className="rounded-md border border-rule p-4">
-          <legend className="px-1 font-display text-xl font-bold">Mileage log</legend>
-          <p className="text-muted">Tap how each leg is charged. The pay boxes below count them for you.</p>
-          <ol className="mt-3 space-y-4">
+        <fieldset className="border-t border-rule pt-3">
+          <legend className="pr-2 font-bold">🛣️ Mileage log</legend>
+          <p className="text-sm text-muted">Pick how each leg is charged. Pay below counts it for you.</p>
+          <ol className="mt-2 divide-y divide-rule">
             {legs.map((l, i) => (
-              <li key={l.key} className="rounded-md border border-field p-3">
+              <li key={l.key} className="py-2">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold">Leg {i + 1}</h3>
+                  <h3 className="text-sm font-semibold">Leg {i + 1}</h3>
                   {legs.length > 1 && <button type="button" className="min-h-11 text-sm text-muted underline-offset-4 hover:underline" onClick={() => setLegs((ls) => ls.filter((x) => x.key !== l.key))}>Remove leg {i + 1}</button>}
                 </div>
-                <div role="radiogroup" aria-label={`Leg ${i + 1} charged as`} className="mt-2 flex flex-wrap gap-2">
+                <div role="radiogroup" aria-label={`Leg ${i + 1} charged as`} className="mt-1 flex flex-wrap gap-1.5">
                   {CHARGE.map(([c, label]) => (
                     <button key={c} type="button" role="radio" aria-checked={l.charged_as === c} onClick={() => setLeg(l.key, { charged_as: c })}
-                      className={`btn !min-h-11 !px-4 ${l.charged_as === c ? "btn-gold" : "btn-line"}`}>{label}</button>
+                      className={`btn !min-h-10 !px-3 text-sm ${l.charged_as === c ? "btn-gold" : "btn-line"}`}>{label}</button>
                   ))}
                   <button type="button" role="switch" aria-checked={l.overnight} onClick={() => setLeg(l.key, { overnight: !l.overnight })}
-                    className={`btn !min-h-11 !px-4 ${l.overnight ? "btn-gold" : "btn-line"}`}>Overnight {l.overnight ? "on" : "off"}</button>
+                    className={`btn !min-h-10 !px-3 text-sm ${l.overnight ? "btn-gold" : "btn-line"}`}>Overnight {l.overnight ? "on" : "off"}</button>
                 </div>
-                <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-2 lg:grid-cols-4">
                   <div className="field"><label htmlFor={`d-${l.key}`}>Date</label><input id={`d-${l.key}`} type="date" className="input" value={l.leg_date} onChange={(e) => setLeg(l.key, { leg_date: e.target.value })} /></div>
                   <div className="field"><label htmlFor={`m-${l.key}`}>Total miles</label><input id={`m-${l.key}`} type="number" inputMode="decimal" step="0.1" className="input" value={l.miles} onChange={(e) => setLeg(l.key, { miles: e.target.value })} /></div>
                   <div className="field"><label htmlFor={`s-${l.key}`}>Starting location<span aria-hidden="true" className="text-gold"> *</span></label><input id={`s-${l.key}`} className="input" value={l.start_location} onChange={(e) => setLeg(l.key, { start_location: e.target.value })} /></div>
@@ -227,25 +222,25 @@ export default function RunSheetForm({
               </li>
             ))}
           </ol>
-          <button type="button" className="btn btn-line mt-3" onClick={() => setLegs((ls) => [...ls, newLeg({ start_location: ls[ls.length - 1]?.end_location ?? "", leg_date: ls[ls.length - 1]?.leg_date ?? "" })])}>Add a leg</button>
+          <button type="button" className="btn btn-line mt-1" onClick={() => setLegs((ls) => [...ls, newLeg({ start_location: ls[ls.length - 1]?.end_location ?? "", leg_date: ls[ls.length - 1]?.leg_date ?? "" })])}>Add a leg</button>
         </fieldset>
 
-        <fieldset className="rounded-md border border-rule p-4">
-          <legend className="px-1 font-display text-xl font-bold">Position<span aria-hidden="true" className="text-gold"> *</span></legend>
-          <div className="flex flex-wrap gap-x-5">
+        <fieldset className="border-t border-rule pt-3">
+          <legend className="pr-2 font-bold">Position<span aria-hidden="true" className="text-gold"> *</span></legend>
+          <div className="flex flex-wrap gap-x-4">
             {Object.entries(POSITIONS).map(([val, label]) => (
-              <label key={val} className="check min-h-11 items-center">
+              <label key={val} className="check min-h-10 items-center text-sm">
                 <input type="checkbox" name="positions" value={val} defaultChecked={(sheet?.positions ?? load.positions ?? []).includes(val)} /><span>{label}</span>
               </label>
             ))}
           </div>
         </fieldset>
 
-        <fieldset className="rounded-md border border-rule p-4">
-          <legend className="px-1 font-display text-xl font-bold">Pay</legend>
-          <p className="text-muted">Rates fill in from the load and customer rate card{mode === "admin" ? "; every box can be corrected." : ". Dispatch can correct them."}</p>
-          <div className="mt-3 overflow-x-auto">
-            <table className="w-full min-w-[520px] text-left">
+        <fieldset className="border-t border-rule pt-3">
+          <legend className="pr-2 font-bold">💵 Pay</legend>
+          <p className="text-sm text-muted">Rates fill in from the load and customer rate card{mode === "admin" ? "; every box can be corrected." : ". Dispatch can correct them."}</p>
+          <div className="mt-1 overflow-x-auto">
+            <table className="w-full min-w-[480px] text-left text-sm">
               <thead><tr className="text-sm text-muted"><th scope="col" className="py-1">Line</th><th scope="col">Count</th><th scope="col">Rate ($)</th><th scope="col" className="text-right">Amount</th></tr></thead>
               <tbody>
                 {payRows.map(([label, how, qty, , amt], idx) => {
@@ -253,23 +248,23 @@ export default function RunSheetForm({
                   const field = (["rate_per_mile", "rate_day", "rate_mini", "rate_overnight", "rate_no_go"] as const)[idx];
                   return (
                     <tr key={label} className="border-t border-rule">
-                      <th scope="row" className="py-2 font-medium">{label}<span className="block text-sm font-normal text-muted">{how}</span></th>
+                      <th scope="row" className="py-1 font-medium">{label} <span className="font-normal text-muted">({how})</span></th>
                       <td>{qty}</td>
                       <td><label className="sr-only" htmlFor={`rs-${field}`}>{label} rate</label>
-                        <input id={`rs-${field}`} name={field} type="number" inputMode="decimal" step="0.01" className="input !min-h-11 max-w-32" value={rates[key]} onChange={(e) => setRates((r) => ({ ...r, [key]: e.target.value }))} /></td>
+                        <input id={`rs-${field}`} name={field} type="number" inputMode="decimal" step="0.01" className="input !min-h-9 !py-1 max-w-28" value={rates[key]} onChange={(e) => setRates((r) => ({ ...r, [key]: e.target.value }))} /></td>
                       <td className="text-right tabular-nums">{money(amt)}</td>
                     </tr>
                   );
                 })}
                 <tr className="border-t border-rule">
-                  <th scope="row" className="py-2 font-medium">Gas amount</th>
+                  <th scope="row" className="py-1 font-medium">Gas</th>
                   <td colSpan={1}><label className="check min-h-11 items-center"><input type="checkbox" name="include_gas" checked={includeGas} onChange={(e) => setIncludeGas(e.target.checked)} /><span>Include in total</span></label></td>
-                  <td><label className="sr-only" htmlFor="rs-gas">Gas amount</label><input id="rs-gas" name="gas_amount" type="number" inputMode="decimal" step="0.01" className="input !min-h-11 max-w-32" value={gas} onChange={(e) => setGas(e.target.value)} /></td>
+                  <td><label className="sr-only" htmlFor="rs-gas">Gas amount</label><input id="rs-gas" name="gas_amount" type="number" inputMode="decimal" step="0.01" className="input !min-h-9 !py-1 max-w-28" value={gas} onChange={(e) => setGas(e.target.value)} /></td>
                   <td className="text-right tabular-nums">{money(calc.lines.gas.amount)}</td>
                 </tr>
                 <tr className="border-t-2 border-field">
-                  <th scope="row" colSpan={3} className="py-3 text-lg font-bold">Total amount due</th>
-                  <td className="text-right text-lg font-bold tabular-nums" aria-live="polite">{money(calc.total)}</td>
+                  <th scope="row" colSpan={3} className="py-2 font-bold">Total amount due</th>
+                  <td className="text-right font-bold tabular-nums" aria-live="polite">{money(calc.total)}</td>
                 </tr>
               </tbody>
             </table>
@@ -278,13 +273,13 @@ export default function RunSheetForm({
 
         <div className="field">
           <label htmlFor="rs-notes">Notes for dispatch</label>
-          <textarea id="rs-notes" name="notes" rows={3} className="input !min-h-0" defaultValue={v("notes") ?? ""} />
+          <textarea id="rs-notes" name="notes" rows={2} className="input !min-h-0" defaultValue={v("notes") ?? ""} />
         </div>
 
         {Object.values(extras).some(Boolean) && (
-          <details className="rounded-md border border-rule p-4" open={Boolean(sheet && (sheet.odometer_start || sheet.incident_report || files.length))}>
-            <summary className="cursor-pointer font-display text-xl font-bold">More details (optional)</summary>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <details className="border-t border-rule pt-3" open={Boolean(sheet && (sheet.odometer_start || sheet.incident_report || files.length))}>
+            <summary className="min-h-11 cursor-pointer text-sm font-bold">📎 Receipts, photos, signatures and more <span className="font-normal text-muted">(optional)</span></summary>
+            <div className="mt-2 grid gap-x-3 gap-y-2 sm:grid-cols-2">
               {extras.equipment_check && <label className="check min-h-11 items-center sm:col-span-2"><input type="checkbox" name="equipment_checked" defaultChecked={Boolean(v("equipment_checked"))} /><span>Equipment checked at start (lights, signs, flags, radio, extinguisher, first aid, cones, vest)</span></label>}
               {extras.odometer && <><Txt name="odometer_start" label="Odometer start" type="number" inputMode="decimal" def={v("odometer_start")} /><Txt name="odometer_end" label="Odometer end" type="number" inputMode="decimal" def={v("odometer_end")} /></>}
               {extras.times && <><Txt name="time_start" label="Start time" type="datetime-local" def={v("time_start")?.slice(0, 16)} /><Txt name="time_end" label="End time" type="datetime-local" def={v("time_end")?.slice(0, 16)} /></>}
@@ -323,9 +318,9 @@ export default function RunSheetForm({
         )}
 
         {mode === "admin" && (
-          <fieldset className="rounded-md border border-gold-fill p-4">
-            <legend className="px-1 font-display text-xl font-bold">Dispatch review</legend>
-            <div className="grid gap-4 sm:grid-cols-2">
+          <fieldset className="border-t-2 border-gold-fill pt-3">
+            <legend className="pr-2 font-bold">Dispatch review</legend>
+            <div className="grid gap-x-3 gap-y-2 sm:grid-cols-2">
               <div className="field sm:col-span-2"><label htmlFor="rs-ac">Comment to driver</label><textarea id="rs-ac" name="admin_comment" rows={2} className="input !min-h-0" defaultValue={v("admin_comment") ?? ""} /></div>
               {extras.customer_rating && (
                 <div className="field"><label htmlFor="rs-rate">Customer rating of service (internal)</label>
@@ -336,11 +331,11 @@ export default function RunSheetForm({
           </fieldset>
         )}
 
-        <div className="sticky bottom-20 z-10 flex flex-wrap gap-2 rounded-md border border-rule bg-bg/95 p-3 backdrop-blur md:bottom-2">
+        <div className={`sticky ${mode === "driver" ? "bottom-14" : "bottom-0"} z-10 flex flex-wrap items-center gap-2 border-t border-rule bg-bg py-3`}>
           <button name="intent" value="save" className="btn btn-line" disabled={pending}>{pending ? "Saving…" : mode === "admin" ? "Save corrections" : "Save draft"}</button>
           {mode === "driver" && <button name="intent" value="submit" className="btn btn-gold" disabled={pending}>Mark run complete and send</button>}
           {mode === "admin" && status !== "approved" && <button name="intent" value="approve" className="btn btn-gold" disabled={pending}>Approve</button>}
-          <span className="self-center text-sm text-muted">Total {money(calc.total)}</span>
+          <span className="ml-auto text-sm font-semibold tabular-nums">Total {money(calc.total)}</span>
         </div>
       </fieldset>
     </form>

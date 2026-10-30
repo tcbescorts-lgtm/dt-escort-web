@@ -3,10 +3,10 @@ import { tone } from "@/lib/format";
 
 export function PageHead({ title, sub, actions }: { title: string; sub?: React.ReactNode; actions?: React.ReactNode }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 className="font-display text-3xl font-bold leading-tight md:text-4xl">{title}</h1>
-        {sub && <p className="mt-1 text-muted">{sub}</p>}
+        <h1 className="text-xl font-bold leading-tight md:text-2xl">{title}</h1>
+        {sub && <p className="mt-0.5 text-sm text-muted">{sub}</p>}
       </div>
       {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
     </div>
@@ -15,10 +15,10 @@ export function PageHead({ title, sub, actions }: { title: string; sub?: React.R
 
 export function Panel({ title, children, actions, id, className = "" }: { title?: string; children: React.ReactNode; actions?: React.ReactNode; id?: string; className?: string }) {
   return (
-    <section aria-labelledby={title && id ? id : undefined} className={`rounded-md border border-rule bg-surface p-4 md:p-5 ${className}`}>
+    <section aria-labelledby={title && id ? id : undefined} className={`rounded-md border border-rule bg-surface p-3 md:p-4 ${className}`}>
       {(title || actions) && (
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          {title && <h2 id={id} className="text-lg font-semibold">{title}</h2>}
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          {title && <h2 id={id} className="font-bold">{title}</h2>}
           {actions}
         </div>
       )}
@@ -37,7 +37,7 @@ const toneClass = {
 
 export function Badge({ status, label }: { status: string; label: string }) {
   return (
-    <span className={`inline-flex items-center whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm font-medium ${toneClass[tone(status)]}`}>
+    <span className={`inline-flex items-center whitespace-nowrap rounded border px-2 py-0.5 text-xs font-semibold ${toneClass[tone(status)]}`}>
       {label}
     </span>
   );
@@ -45,10 +45,10 @@ export function Badge({ status, label }: { status: string; label: string }) {
 
 export function Stat({ label, value, hint }: { label: string; value: React.ReactNode; hint?: string }) {
   return (
-    <div className="rounded-md border border-rule bg-surface p-4">
-      <p className="text-sm text-muted">{label}</p>
-      <p className="mt-1 font-display text-3xl font-bold leading-none">{value}</p>
-      {hint && <p className="mt-1 text-sm text-muted">{hint}</p>}
+    <div className="rounded-md border border-rule bg-surface px-3 py-2.5">
+      <p className="text-xs text-muted">{label}</p>
+      <p className="mt-0.5 text-xl font-bold leading-tight tabular-nums">{value}</p>
+      {hint && <p className="text-xs text-muted">{hint}</p>}
     </div>
   );
 }
@@ -65,12 +65,12 @@ export function Empty({ children, action }: { children: React.ReactNode; action?
 export function Table({ head, children, caption }: { head: React.ReactNode[]; children: React.ReactNode; caption?: string }) {
   return (
     <div className="overflow-x-auto rounded-md border border-rule">
-      <table className="w-full min-w-[640px] border-collapse text-left text-[0.95rem]">
+      <table className="w-full min-w-[640px] border-collapse text-left text-sm">
         {caption && <caption className="sr-only">{caption}</caption>}
         <thead className="bg-surface-2">
-          <tr>{head.map((h, i) => <th key={i} scope="col" className="whitespace-nowrap px-3 py-2.5 font-semibold">{h}</th>)}</tr>
+          <tr>{head.map((h, i) => <th key={i} scope="col" className="whitespace-nowrap px-3 py-2 font-semibold">{h}</th>)}</tr>
         </thead>
-        <tbody className="[&_td]:border-t [&_td]:border-rule [&_td]:px-3 [&_td]:py-2.5 [&_td]:align-top">{children}</tbody>
+        <tbody className="[&_td]:border-t [&_td]:border-rule [&_td]:px-3 [&_td]:py-2 [&_td]:align-top">{children}</tbody>
       </table>
     </div>
   );
@@ -138,9 +138,9 @@ export function TA({ name, label, defaultValue, rows = 3, hint, className = "" }
 
 export function Fieldset({ legend, children, className = "" }: { legend: string; children: React.ReactNode; className?: string }) {
   return (
-    <fieldset className={`rounded-md border border-rule p-4 md:p-5 ${className}`}>
-      <legend className="px-1 font-display text-xl font-bold">{legend}</legend>
-      <div className="mt-2 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
+    <fieldset className={`border-t border-rule pt-3 ${className}`}>
+      <legend className="pr-2 text-sm font-bold">{legend}</legend>
+      <div className="mt-1 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{children}</div>
     </fieldset>
   );
 }

@@ -26,7 +26,7 @@ export default async function DriverLayout({ children }: { children: React.React
       <header className="sticky top-0 z-20 border-b border-rule bg-bg/95 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-2">
           <Link href="/driver" className="flex min-h-11 items-center gap-2">
-            <Image src="/brand/dt-logo-nophone.png" alt="" width={36} height={36} className="h-9 w-9" />
+            <Image src="/brand/dt-logo-graygold.png" alt="" width={36} height={36} className="h-9 w-9" />
             <span className="font-display text-lg font-bold">D&nbsp;&amp;&nbsp;T <span className="text-gold">Driver</span></span>
           </Link>
           <span className="ml-auto truncate text-sm text-muted">{me.fullName.split(" ")[0]}</span>

@@ -34,7 +34,7 @@ export default async function PublicInvoice({ params, searchParams }: { params: 
           </div>
           <div className="text-right">
             <p className="text-muted">Balance due</p>
-            <p className="font-display text-4xl font-bold">{money(balance)}</p>
+            <p className="text-2xl font-bold">{money(balance)}</p>
           </div>
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">

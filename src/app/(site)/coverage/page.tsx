@@ -18,7 +18,7 @@ const corridors = [
   {
     id: "i-20",
     title: "I-20",
-    text: "I-20 crosses Jackson on its way from West Texas through Dallas, Shreveport, Birmingham and Atlanta to South Carolina. It's a main east–west route for equipment moving across the South.",
+    text: "I-20 crosses Jackson on its way from West Texas through Dallas, Shreveport, Birmingham and Atlanta to South Carolina. It's a main east-west route for equipment moving across the South.",
   },
   {
     id: "i-10",

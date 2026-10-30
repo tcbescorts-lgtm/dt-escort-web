@@ -21,7 +21,7 @@ const d = (v: string | null) => (v ? new Date(v + "T12:00:00").toLocaleDateStrin
 export async function invoicePdf(inv: any, items: any[], load: any | null, paymentText: string) {
   let logo: Buffer | null = null;
   try {
-    logo = await readFile(join(process.cwd(), "public/brand/dt-logo-nophone.png"));
+    logo = await readFile(join(process.cwd(), "public/brand/dt-logo-graygold.png"));
   } catch {}
   const balance = Number(inv.total) - Number(inv.amount_paid);
   const doc = (

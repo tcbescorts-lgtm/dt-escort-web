@@ -56,7 +56,7 @@ export default function CareersClient() {
               )}
             </WebForm>
           </div>
-          <aside aria-labelledby="careers-why" className="h-fit rounded-md border border-rule bg-surface p-6">
+          <aside aria-labelledby="careers-why" className="h-fit border-t border-rule pt-5 md:border-t-0 md:border-l md:pl-8 md:pt-0">
             <h2 id="careers-why" className="display-3">Why we ask so little</h2>
             <p className="mt-3 text-muted">
               Don&apos;t send your license number, date of birth or Social Security number through this

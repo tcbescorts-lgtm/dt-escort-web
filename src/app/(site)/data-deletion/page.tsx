@@ -19,7 +19,7 @@ export default function DataDeletion() {
       <Container>
         <div className="grid gap-12 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <div className="max-w-2xl"><DeletionForm /></div>
-          <aside aria-labelledby="del-how" className="h-fit rounded-md border border-rule bg-surface p-6">
+          <aside aria-labelledby="del-how" className="h-fit border-t border-rule pt-5 md:border-t-0 md:border-l md:pl-8 md:pt-0">
             <h2 id="del-how" className="display-3">What happens next</h2>
             <ol className="mt-3 list-decimal space-y-2 pl-5 text-muted">
               <li>We email you from {company.email} to confirm the request came from you.</li>

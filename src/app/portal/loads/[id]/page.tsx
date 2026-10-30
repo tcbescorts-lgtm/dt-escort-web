@@ -30,8 +30,11 @@ export default async function LoadDetail({ params, searchParams }: { params: Pro
     <>
       <PageHead
         title={`${l.load_no}: ${l.pickup ?? "?"} → ${l.dropoff ?? "?"}`}
-        sub={<>{date(l.load_date)} · booked by {l.booked_by ?? "—"} · <Badge status={l.status} label={LOAD_STATUS[l.status]} /></>}
-        actions={<a className="btn btn-line" href={maps(l.dropoff ?? "")} target="_blank" rel="noopener noreferrer">Route in Google Maps<span className="sr-only"> (opens in a new tab)</span></a>}
+        sub={<>{date(l.load_date)} · booked by {l.booked_by ?? "-"} · <Badge status={l.status} label={LOAD_STATUS[l.status]} /></>}
+        actions={<>
+          <Link className="btn btn-line" href={`/portal/loads/new?from=${l.id}`}>🔁 Book again</Link>
+          <a className="btn btn-line" href={maps(l.dropoff ?? "")} target="_blank" rel="noopener noreferrer">Route in Google Maps<span className="sr-only"> (opens in a new tab)</span></a>
+        </>}
       />
       <Flash msg={sp.saved ? "Load saved." : null} />
 
@@ -39,18 +42,18 @@ export default async function LoadDetail({ params, searchParams }: { params: Pro
         <Panel title="Summary" id="sum" className="xl:col-span-2">
           <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              ["Customer", `${l.customer?.company ?? "—"} (${PARTY[l.customer?.type ?? "not_set"]})`],
-              ["Contact", [l.customer?.contact_name, l.customer?.phone, l.customer?.email].filter(Boolean).join(" · ") || "—"],
-              ["Invoice to", `${l.invoice_customer?.company ?? l.customer?.company ?? "—"}${l.invoice_email ? ` · ${l.invoice_email}` : ""}`],
+              ["Customer", `${l.customer?.company ?? "-"} (${PARTY[l.customer?.type ?? "not_set"]})`],
+              ["Contact", [l.customer?.contact_name, l.customer?.phone, l.customer?.email].filter(Boolean).join(" · ") || "-"],
+              ["Invoice to", `${l.invoice_customer?.company ?? l.customer?.company ?? "-"}${l.invoice_email ? ` · ${l.invoice_email}` : ""}`],
               ["Quick pay", l.quick_pay === "yes" ? `Yes${l.qp_fee_pct ? `, ${l.qp_fee_pct}%` : ""}` : l.quick_pay === "no" ? "No" : "Not set"],
-              ["Terms / paid by", [l.payment_terms?.replace(/_/g, " "), l.paid_by].filter(Boolean).join(" · ") || "—"],
-              ["Truck", [l.truck_driver_name, l.truck_driver_phone, l.trucking_company, l.truck_number && `#${l.truck_number}`].filter(Boolean).join(" · ") || "—"],
-              ["Miles / empty at", [l.est_miles && `${l.est_miles} mi`, l.empty_at].filter(Boolean).join(" · ") || "—"],
-              ["Dimensions", [l.height && `H ${l.height}`, l.width && `W ${l.width}`, l.length && `L ${l.length}`, l.weight && `${l.weight}`].filter(Boolean).join(" · ") || "—"],
-              ["Positions", l.load_positions.map((p: any) => POSITIONS[p.position]).join(", ") || "—"],
-              ["Rates", [l.rate_per_mile && `${money(l.rate_per_mile)}/mi`, l.rate_day && `day ${money(l.rate_day)}`, l.rate_overnight && `overnight ${money(l.rate_overnight)}`, l.rate_no_go && `no-go ${money(l.rate_no_go)}`, l.rate_mini && `mini ${money(l.rate_mini)}`, l.rate_flat && `flat ${money(l.rate_flat)}`].filter(Boolean).join(" · ") || "—"],
-              ["Order #", l.order_no ?? "—"],
-              ["Remarks", l.remarks ?? "—"],
+              ["Terms / paid by", [l.payment_terms?.replace(/_/g, " "), l.paid_by].filter(Boolean).join(" · ") || "-"],
+              ["Truck", [l.truck_driver_name, l.truck_driver_phone, l.trucking_company, l.truck_number && `#${l.truck_number}`].filter(Boolean).join(" · ") || "-"],
+              ["Miles / empty at", [l.est_miles && `${l.est_miles} mi`, l.empty_at].filter(Boolean).join(" · ") || "-"],
+              ["Dimensions", [l.height && `H ${l.height}`, l.width && `W ${l.width}`, l.length && `L ${l.length}`, l.weight && `${l.weight}`].filter(Boolean).join(" · ") || "-"],
+              ["Positions", l.load_positions.map((p: any) => POSITIONS[p.position]).join(", ") || "-"],
+              ["Rates", [l.rate_per_mile && `${money(l.rate_per_mile)}/mi`, l.rate_day && `day ${money(l.rate_day)}`, l.rate_overnight && `overnight ${money(l.rate_overnight)}`, l.rate_no_go && `no-go ${money(l.rate_no_go)}`, l.rate_mini && `mini ${money(l.rate_mini)}`, l.rate_flat && `flat ${money(l.rate_flat)}`].filter(Boolean).join(" · ") || "-"],
+              ["Order #", l.order_no ?? "-"],
+              ["Remarks", l.remarks ?? "-"],
             ].map(([k, v]) => (
               <div key={k}><dt className="text-sm text-muted">{k}</dt><dd>{v}</dd></div>
             ))}
@@ -122,7 +125,7 @@ export default async function LoadDetail({ params, searchParams }: { params: Pro
       </div>
 
       <details className="mt-6 rounded-md border border-rule p-4">
-        <summary className="cursor-pointer font-display text-xl font-bold">Edit load</summary>
+        <summary className="cursor-pointer text-base font-bold">Edit load</summary>
         <div className="mt-4"><LoadForm {...formData} load={l} /></div>
       </details>
     </>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { parseBookingNotes } from "@/lib/parseNotes";
 import { POSITIONS } from "@/lib/format";
 import { saveLoad, type SaveState } from "./actions";
@@ -44,13 +44,27 @@ function Pick({ name, label, opts, def, onChange }: { name: string; label: strin
   );
 }
 
-function Group({ legend, children, cols = 3 }: { legend: string; children: React.ReactNode; cols?: 2 | 3 | 4 }) {
-  const c = cols === 2 ? "lg:grid-cols-2" : cols === 4 ? "lg:grid-cols-4" : "lg:grid-cols-3";
+function Group({ legend, children, cols = 4 }: { legend: string; children: React.ReactNode; cols?: 2 | 3 | 4 }) {
+  const c = cols === 2 ? "lg:grid-cols-2" : cols === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4";
   return (
-    <fieldset className="rounded-md border border-rule p-4 md:p-5">
-      <legend className="px-1 font-display text-xl font-bold">{legend}</legend>
-      <div className={`mt-2 grid gap-4 sm:grid-cols-2 ${c}`}>{children}</div>
+    <fieldset className="grid gap-x-6 gap-y-2 border-t border-rule pt-3 lg:grid-cols-[9rem_minmax(0,1fr)]">
+      <legend className="float-left pt-1 text-sm font-bold lg:w-36">{legend}</legend>
+      <div className={`grid grid-cols-2 gap-x-3 gap-y-2 ${c}`}>{children}</div>
     </fieldset>
+  );
+}
+
+/** Collapsed section with a one-line summary, opened automatically when it holds an error or filled data. */
+function More({ title, summary, open, children }: { title: string; summary: string; open?: boolean; children: React.ReactNode }) {
+  return (
+    <details open={open} className="group border-t border-rule pt-3">
+      <summary className="flex min-h-9 cursor-pointer list-none items-center gap-2 text-sm">
+        <span aria-hidden="true" className="text-muted group-open:rotate-90">▸</span>
+        <span className="font-bold">{title}</span>
+        <span className="truncate text-muted">{summary}</span>
+      </summary>
+      <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-2 lg:grid-cols-4">{children}</div>
+    </details>
   );
 }
 
@@ -94,10 +108,15 @@ export default function LoadForm({ customers, drivers, bookedBy, load }: { custo
     }
   };
 
+  const openAll = () => formRef.current?.querySelectorAll("details").forEach((d) => (d.open = true));
+  useEffect(() => {
+    if (state?.fieldErrors && Object.keys(state.fieldErrors).length) openAll();
+  }, [state]);
+
   const fill = () => {
     const { fields, matched } = parseBookingNotes(notes);
     if (!matched.length) {
-      setFilled("Nothing recognizable found. Try lines like “Company: …”, “Route: Jackson, MS to Houston, TX”, “Rate: $2/mile”.");
+      setFilled('Nothing recognized. Try lines like "Company: ...", "Route: Jackson, MS to Houston, TX", "Rate: $2/mile".');
       return;
     }
     if (typeof fields.company === "string") { set("company", fields.company); applyCustomer(fields.company); }
@@ -118,7 +137,8 @@ export default function LoadForm({ customers, drivers, bookedBy, load }: { custo
       const d = drivers.find((x) => x.full_name.toLowerCase().includes((fields.pilot as string).toLowerCase()));
       if (d) set("pilot", d.id);
     }
-    setFilled(`Filled ${matched.length} field${matched.length === 1 ? "" : "s"} from your notes. Review everything below before saving.`);
+    openAll();
+    setFilled(`Filled ${matched.length} field${matched.length === 1 ? "" : "s"}. Check them before saving.`);
   };
 
   const clearForm = () => {
@@ -130,8 +150,8 @@ export default function LoadForm({ customers, drivers, bookedBy, load }: { custo
   };
 
   return (
-    <form ref={formRef} action={action} className="space-y-5" noValidate>
-      {load && <input type="hidden" name="id" value={load.id} />}
+    <form ref={formRef} action={action} className="space-y-3" noValidate>
+      {load?.id && <input type="hidden" name="id" value={load.id} />}
       <input type="hidden" name="customer_id" defaultValue={load?.customer_id ?? ""} />
       {state?.error && <p role="alert" className="rounded-md border-2 border-error p-3 text-error font-medium">{state.error}</p>}
       {Object.keys(fe).length > 0 && (
@@ -141,78 +161,39 @@ export default function LoadForm({ customers, drivers, bookedBy, load }: { custo
         </div>
       )}
 
-      <div className="grid gap-4 md:grid-cols-[14rem_1fr]">
-        <Pick name="booked_by" label="Booked by" opts={bookedBy.map((b) => [b, b])} def={load?.booked_by} />
-        <div className="field">
-          <label htmlFor="lf-raw_notes">Paste booking notes</label>
-          <span id="lf-raw_notes-hint" className="hint">Paste call notes or a broker email, then press Fill the form. Nothing is saved until you press Save load.</span>
-          <textarea id="lf-raw_notes" name="raw_notes" rows={5} className="input" value={notes} onChange={(e) => setNotes(e.target.value)} aria-describedby="lf-raw_notes-hint" />
-          <div className="mt-2 flex flex-wrap gap-2">
+      <details open={!load} className="rounded-md border border-rule bg-surface p-3">
+        <summary className="cursor-pointer list-none text-sm font-bold">📋 Paste booking notes to fill the form <span className="font-normal text-muted">(optional)</span></summary>
+        <div className="mt-2">
+          <label htmlFor="lf-raw_notes" className="sr-only">Booking notes</label>
+          <textarea id="lf-raw_notes" name="raw_notes" rows={3} className="input !min-h-0" value={notes} onChange={(e) => setNotes(e.target.value)}
+            placeholder="Paste call notes or a broker email. Nothing is saved until you press Save load." />
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             <button type="button" className="btn btn-gold" onClick={fill} disabled={!notes.trim()}>Fill the form</button>
-            <button type="button" className="btn btn-line" onClick={() => { setNotes(""); setFilled(null); }}>Clear</button>
-            <button type="button" className="btn btn-line" onClick={clearForm}>Clear form</button>
+            <button type="button" className="btn btn-line" onClick={clearForm}>Start over</button>
+            <p aria-live="polite" className="text-sm font-medium text-success">{filled}</p>
           </div>
-          <p aria-live="polite" className="mt-2 text-success font-medium">{filled}</p>
         </div>
-      </div>
+      </details>
 
       <datalist id="customer-list">{customers.map((c) => <option key={c.id} value={c.company} />)}</datalist>
 
-      <Group legend="Customer (who posted the load)" cols={3}>
-        <Inp name="company" label="Company" req list="customer-list" err={fe.company} def={load?.customer?.company}
-          hint="Type to search saved customers; a new name creates a customer." onChange={applyCustomer} />
+      <Group legend="Customer">
+        <Inp name="company" label="Company" req list="customer-list" err={fe.company} def={load?.customer?.company} onChange={applyCustomer} />
         <Inp name="contact_name" label="Point of contact" def={load?.customer?.contact_name} />
-        <Inp name="contact_phone" label="Contact number" type="tel" def={load?.customer?.phone} />
+        <Inp name="contact_phone" label="Phone" type="tel" def={load?.customer?.phone} />
         <Inp name="contact_email" label="Email" type="email" err={fe.contact_email} def={load?.customer?.email} />
-        <Pick name="customer_type" label="Type" opts={PARTY_OPTS.slice(0, 2).concat([["not_set", "Not set"]])} def={load?.customer?.type ?? "broker"} />
       </Group>
 
-      <Group legend="Invoice to (who pays us)">
-        <div className="field sm:col-span-2 lg:col-span-3">
-          <div className="check">
-            <input id="lf-same" type="checkbox" name="same_as_customer" checked={same} onChange={(e) => setSame(e.target.checked)} />
-            <label htmlFor="lf-same" className="!font-normal">Same as customer</label>
-          </div>
-        </div>
-        {!same && <Inp name="invoice_company" label="Company to invoice" list="customer-list" def={load?.invoice_customer?.company} />}
-        <input type="hidden" name="invoice_customer_id" defaultValue={!same ? load?.invoice_customer_id ?? "" : ""} />
-        <Inp name="invoice_email" label="Invoice email" type="email" err={fe.invoice_email} def={load?.invoice_email} />
-        <Pick name="invoice_type" label="Type" opts={PARTY_OPTS} def={load?.invoice_type ?? "not_set"} />
-        <Inp name="billing_contact" label="Billing contact" def={load?.billing_contact} />
-        <Inp name="billing_phone" label="Billing phone" type="tel" def={load?.billing_phone} />
-      </Group>
-
-      <Group legend="Payment" cols={4}>
-        <Pick name="quick_pay" label="Quick pay" opts={[["not_set", "Not set"], ["yes", "Yes"], ["no", "No"]]} def={load?.quick_pay} />
-        <Inp name="qp_fee_pct" label="QP fee %" type="number" step="0.01" def={load?.qp_fee_pct} />
-        <Pick name="paid_by" label="Paid by" opts={[["", "Not set"], ["cashapp", "CashApp"], ["zelle", "Zelle"], ["ach", "ACH / direct deposit"], ["check", "Check"], ["stripe", "Card (Stripe)"], ["other", "Other"]]} def={load?.paid_by ?? ""} />
-        <Pick name="payment_terms" label="Payment terms" opts={[["pay_at_drop", "Pay at drop"], ["2_weeks", "2 weeks"], ["custom", "Custom"]]} def={terms} onChange={setTerms} />
-        {terms === "custom" && <Inp name="payment_terms_custom" label="Custom terms" def={load?.payment_terms && !["pay_at_drop", "2_weeks"].includes(load.payment_terms) ? load.payment_terms : ""} />}
-      </Group>
-
-      <Group legend="On the truck" cols={4}>
-        <Inp name="truck_driver_name" label="Truck driver name" def={load?.truck_driver_name} />
-        <Inp name="truck_driver_phone" label="Truck driver phone" type="tel" def={load?.truck_driver_phone} />
-        <Inp name="trucking_company" label="Trucking company" def={load?.trucking_company} />
-        <Inp name="truck_number" label="Truck number" def={load?.truck_number} />
-      </Group>
-
-      <Group legend="Load details" cols={4}>
+      <Group legend="Route">
         <Inp name="pickup" label="Pick up" req err={fe.pickup} def={load?.pickup} />
         <Inp name="dropoff" label="Drop off" req err={fe.dropoff} def={load?.dropoff} />
         <Inp name="load_date" label="Load date" type="date" req err={fe.load_date} def={load?.load_date} />
         <Inp name="est_miles" label="Est. miles" type="number" step="0.1" def={load?.est_miles} />
-        <Inp name="empty_at" label="Empty at" hint="Where the escort starts from" def={load?.empty_at} />
-        <Inp name="order_no" label="Order #" def={load?.order_no} />
-        <Inp name="height" label="Height" def={load?.height} />
-        <Inp name="width" label="Width" def={load?.width} />
-        <Inp name="length" label="Length" def={load?.length} />
-        <Inp name="weight" label="Weight" def={load?.weight} />
-        <fieldset className="sm:col-span-2 lg:col-span-4">
-          <legend className="font-semibold">Positions needed</legend>
-          <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
+        <fieldset className="col-span-2 lg:col-span-4">
+          <legend className="text-sm font-semibold">Positions</legend>
+          <div className="flex flex-wrap gap-x-4">
             {Object.entries(POSITIONS).map(([v, l]) => (
-              <label key={v} className="check min-h-11 items-center">
+              <label key={v} className="check min-h-9 items-center text-sm">
                 <input type="checkbox" name="positions" value={v} defaultChecked={loadPositions.includes(v)} />
                 <span>{l}</span>
               </label>
@@ -221,28 +202,63 @@ export default function LoadForm({ customers, drivers, bookedBy, load }: { custo
         </fieldset>
       </Group>
 
-      <Group legend="Rates agreed" cols={3}>
+      <Group legend="Rate and pilot">
         <Inp name="rate_per_mile" label="Per mile ($)" type="number" step="0.01" def={load?.rate_per_mile} />
         <Inp name="rate_day" label="Day rate ($)" type="number" step="0.01" def={load?.rate_day} />
+        <Pick name="pilot" label="Pilot" opts={[["", "Unassigned"], ...drivers.map((d) => [d.id, (d.status === "needs_load" ? "🟢 " : "") + d.full_name] as [string, string])]} />
+        <Pick name="status" label="Status" def={load?.status ?? "booked"}
+          opts={[["booked", "Booked"], ["draft", "Draft"], ["assigned", "Assigned"], ["in_progress", "In progress"], ["delivered", "Delivered"], ["cancelled", "Cancelled"]]} />
+      </Group>
+
+      <More title="💵 Other rates" summary="Overnight, no-go, mini run, flat" open={Boolean(load?.rate_overnight || load?.rate_no_go || load?.rate_mini || load?.rate_flat)}>
         <Inp name="rate_overnight" label="Overnight ($)" type="number" step="0.01" def={load?.rate_overnight} />
         <Inp name="rate_no_go" label="No-go ($)" type="number" step="0.01" def={load?.rate_no_go} />
         <Inp name="rate_mini" label="Mini run ($)" type="number" step="0.01" def={load?.rate_mini} />
-        <Inp name="rate_flat" label="Flat rate / total ($)" type="number" step="0.01" def={load?.rate_flat} />
-      </Group>
+        <Inp name="rate_flat" label="Flat total ($)" type="number" step="0.01" def={load?.rate_flat} />
+      </More>
 
-      <Group legend="Assignment" cols={3}>
-        <Pick name="pilot" label="Pilot" opts={[["", "Unassigned"], ...drivers.map((d) => [d.id, d.full_name + (d.status === "needs_load" ? " (needs a load)" : "")] as [string, string])]} />
-        <Pick name="status" label="Status" def={load?.status ?? "booked"}
-          opts={[["booked", "Booked (active)"], ["draft", "Draft"], ["assigned", "Assigned"], ["in_progress", "In progress"], ["delivered", "Delivered"], ["cancelled", "Cancelled"]]} />
-        <div className="field sm:col-span-2 lg:col-span-3">
-          <label htmlFor="lf-remarks">Remarks</label>
-          <textarea id="lf-remarks" name="remarks" rows={3} className="input !min-h-0" defaultValue={load?.remarks ?? ""} />
+      <More title="🧾 Billing and payment" summary="Invoice to, quick pay, terms" open={Boolean(fe.invoice_email) || (load && !same)}>
+        <div className="col-span-2 flex min-h-9 items-center lg:col-span-4">
+          <label className="check items-center text-sm"><input id="lf-same" type="checkbox" name="same_as_customer" checked={same} onChange={(e) => setSame(e.target.checked)} /><span>Invoice the same company</span></label>
         </div>
-      </Group>
+        {!same && <Inp name="invoice_company" label="Company to invoice" list="customer-list" def={load?.invoice_customer?.company} />}
+        <input type="hidden" name="invoice_customer_id" defaultValue={!same ? load?.invoice_customer_id ?? "" : ""} />
+        <Inp name="invoice_email" label="Invoice email" type="email" err={fe.invoice_email} def={load?.invoice_email} />
+        <Inp name="billing_contact" label="Billing contact" def={load?.billing_contact} />
+        <Inp name="billing_phone" label="Billing phone" type="tel" def={load?.billing_phone} />
+        <Pick name="quick_pay" label="Quick pay" opts={[["not_set", "Not set"], ["yes", "Yes"], ["no", "No"]]} def={load?.quick_pay} />
+        <Inp name="qp_fee_pct" label="QP fee %" type="number" step="0.01" def={load?.qp_fee_pct} />
+        <Pick name="payment_terms" label="Terms" opts={[["pay_at_drop", "Pay at drop"], ["2_weeks", "2 weeks"], ["custom", "Custom"]]} def={terms} onChange={setTerms} />
+        {terms === "custom" && <Inp name="payment_terms_custom" label="Custom terms" def={load?.payment_terms && !["pay_at_drop", "2_weeks"].includes(load.payment_terms) ? load.payment_terms : ""} />}
+        <Pick name="paid_by" label="Paid by" opts={[["", "Not set"], ["cashapp", "CashApp"], ["zelle", "Zelle"], ["ach", "ACH / direct deposit"], ["check", "Check"], ["stripe", "Card (Stripe)"], ["other", "Other"]]} def={load?.paid_by ?? ""} />
+        <Pick name="customer_type" label="Customer type" opts={PARTY_OPTS.slice(0, 2).concat([["not_set", "Not set"]])} def={load?.customer?.type ?? "broker"} />
+        <Pick name="invoice_type" label="Invoice-to type" opts={PARTY_OPTS} def={load?.invoice_type ?? "not_set"} />
+      </More>
 
-      <div className="flex flex-wrap gap-3">
+      <More title="🚚 Truck and load size" summary="Truck driver, truck #, height, width, length, weight" open={Boolean(load?.truck_driver_name || load?.height)}>
+        <Inp name="truck_driver_name" label="Truck driver" def={load?.truck_driver_name} />
+        <Inp name="truck_driver_phone" label="Truck driver phone" type="tel" def={load?.truck_driver_phone} />
+        <Inp name="trucking_company" label="Trucking company" def={load?.trucking_company} />
+        <Inp name="truck_number" label="Truck #" def={load?.truck_number} />
+        <Inp name="height" label="Height" def={load?.height} />
+        <Inp name="width" label="Width" def={load?.width} />
+        <Inp name="length" label="Length" def={load?.length} />
+        <Inp name="weight" label="Weight" def={load?.weight} />
+        <Inp name="empty_at" label="Escort starts from" def={load?.empty_at} />
+        <Inp name="order_no" label="Order #" def={load?.order_no} />
+      </More>
+
+      <More title="📝 Remarks and booking" summary="Notes, booked by" open={Boolean(load?.remarks)}>
+        <div className="field col-span-2 lg:col-span-3">
+          <label htmlFor="lf-remarks">Remarks</label>
+          <textarea id="lf-remarks" name="remarks" rows={2} className="input !min-h-0" defaultValue={load?.remarks ?? ""} />
+        </div>
+        <Pick name="booked_by" label="Booked by" opts={bookedBy.map((b) => [b, b])} def={load?.booked_by} />
+      </More>
+
+      <div className="sticky bottom-0 z-10 -mx-1 flex flex-wrap items-center gap-3 border-t border-rule bg-bg px-1 py-3">
         <button className="btn btn-gold" disabled={pending}>{pending ? "Saving…" : "Save load"}</button>
-        <p className="self-center text-sm text-muted">Saving with a pilot selected notifies that driver.</p>
+        <p className="text-sm text-muted">Saving with a pilot selected notifies that driver.</p>
       </div>
     </form>
   );

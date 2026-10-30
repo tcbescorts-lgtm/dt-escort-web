@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from "react";
 import { company, nav } from "@/lib/site";
 import ThemeToggle from "./ThemeToggle";
 import Logo from "./Logo";
-import { PhoneIcon } from "./Icons";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -54,9 +53,6 @@ export default function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2 xl:ml-3">
-          <a href={company.telHref} className="btn btn-line hidden whitespace-nowrap md:inline-flex xl:hidden 2xl:inline-flex">
-            <PhoneIcon /> Call Dispatch
-          </a>
           <Link href="/quote" className="btn btn-gold hidden whitespace-nowrap sm:inline-flex">
             Request a Quote
           </Link>
