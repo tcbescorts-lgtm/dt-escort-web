@@ -21,20 +21,20 @@ export default function Contact() {
             <div>
               <dt className="flex items-center gap-2 font-semibold text-muted"><PhoneIcon /> Phone</dt>
               <dd className="mt-1">
-                <a href={company.telHref} className="font-display text-4xl font-bold text-gold underline-offset-4 hover:underline">
+                <a href={company.telHref} className="font-display text-3xl font-bold text-gold underline-offset-4 hover:underline">
                   {company.phoneDisplay}
                 </a>
               </dd>
             </div>
             <div>
               <dt className="flex items-center gap-2 font-semibold text-muted"><MailIcon /> Email</dt>
-              <dd className="mt-1 text-xl">
+              <dd className="mt-1 text-lg">
                 <a href={`mailto:${company.email}`} className="link break-all">{company.email}</a>
               </dd>
             </div>
             <div>
               <dt className="flex items-center gap-2 font-semibold text-muted"><PinIcon /> Office and mailing address</dt>
-              <dd className="mt-1 text-xl">
+              <dd className="mt-1 text-lg">
                 <address className="not-italic">
                   {company.legalName}
                   <br />

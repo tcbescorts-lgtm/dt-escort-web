@@ -9,7 +9,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
     <>
       <JsonLd data={localBusinessLd} />
       <Header />
-      <main id="main" tabIndex={-1} className="focus:outline-none">
+      <main id="main" tabIndex={-1} className="pb-16 focus:outline-none has-[>.flush-end:last-child]:pb-0">
         {children}
       </main>
       <Footer />

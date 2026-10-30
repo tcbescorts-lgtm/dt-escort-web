@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { company, nav } from "@/lib/site";
 import ThemeToggle from "./ThemeToggle";
+import Logo from "./Logo";
 import { PhoneIcon } from "./Icons";
 
 export default function Header() {
@@ -28,13 +28,10 @@ export default function Header() {
   }, [open]);
 
   return (
-    <header className="border-b border-rule bg-bg">
-      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 md:px-6">
+    <header className="sticky top-0 z-30 border-b border-rule bg-bg/90 backdrop-blur supports-[backdrop-filter]:bg-bg/80">
+      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2 md:px-6">
         <Link href="/" className="flex items-center gap-3 no-underline min-h-11" aria-label={`${company.name}, home`}>
-          <Image src="/brand/dt-logo-nophone.png" alt="" width={48} height={48} priority className="h-12 w-12" />
-          <span className="font-display text-[1.35rem] font-bold leading-none tracking-tight whitespace-nowrap">
-            D&nbsp;&amp;&nbsp;T <span className="block text-gold sm:inline">Escort Service</span>
-          </span>
+          <Logo />
         </Link>
 
         <nav aria-label="Main" className="ml-auto hidden xl:block">
@@ -46,7 +43,7 @@ export default function Header() {
                   <Link
                     href={n.href}
                     aria-current={active ? "page" : undefined}
-                    className={`inline-flex min-h-11 items-center whitespace-nowrap rounded px-2.5 font-medium hover:text-gold ${active ? "text-gold underline underline-offset-8 decoration-2" : ""}`}
+                    className={`inline-flex min-h-11 items-center whitespace-nowrap rounded px-2.5 text-[0.92rem] font-medium hover:text-gold ${active ? "text-gold underline underline-offset-8 decoration-2" : ""}`}
                   >
                     {n.label}
                   </Link>
@@ -67,7 +64,7 @@ export default function Header() {
           <button
             ref={btnRef}
             type="button"
-            className="inline-flex h-11 items-center gap-2 rounded-md border border-field px-3 font-medium xl:hidden"
+            className="inline-flex h-11 items-center gap-2 rounded-md border border-field px-3 text-sm font-medium xl:hidden"
             aria-expanded={open}
             aria-controls="mobile-nav"
             onClick={() => setOpen((o) => !o)}
@@ -87,19 +84,19 @@ export default function Header() {
               <Link
                 href={n.href}
                 aria-current={pathname === n.href ? "page" : undefined}
-                className="flex min-h-12 items-center rounded px-2 text-lg font-medium hover:text-gold aria-[current=page]:text-gold"
+                className="flex min-h-11 items-center rounded px-2 text-base font-medium hover:text-gold aria-[current=page]:text-gold"
               >
                 {n.label}
               </Link>
             </li>
           ))}
           <li className="sm:hidden">
-            <Link href="/quote" className="flex min-h-12 items-center rounded px-2 text-lg font-medium text-gold">
+            <Link href="/quote" className="flex min-h-11 items-center rounded px-2 text-base font-medium text-gold">
               Request a Quote
             </Link>
           </li>
           <li>
-            <Link href="/careers" className="flex min-h-12 items-center rounded px-2 text-lg font-medium hover:text-gold">
+            <Link href="/careers" className="flex min-h-11 items-center rounded px-2 text-base font-medium hover:text-gold">
               Careers
             </Link>
           </li>

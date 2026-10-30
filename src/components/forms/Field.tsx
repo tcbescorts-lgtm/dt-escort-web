@@ -10,17 +10,18 @@ function describedBy(name: string, hint?: string, error?: string) {
 }
 
 export function TextField({
-  name, label, hint, errors, required, type = "text", autoComplete, inputMode, defaultValue,
-}: Base & { type?: string; autoComplete?: string; inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"]; defaultValue?: string }) {
+  name, label, hint, errors, required, type = "text", autoComplete, inputMode, defaultValue, placeholder, className,
+}: Base & { type?: string; autoComplete?: string; inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"]; defaultValue?: string; placeholder?: string; className?: string }) {
   const err = errors[name];
   return (
-    <div className="field">
+    <div className={`field ${className ?? ""}`}>
       <label htmlFor={name}>
         {label}
         {required ? <span aria-hidden="true" className="text-gold"> *</span> : <span className="font-normal text-muted"> (optional)</span>}
       </label>
       {hint && <span id={`${name}-hint`} className="hint">{hint}</span>}
       <input
+        placeholder={placeholder}
         id={name}
         name={name}
         type={type}
@@ -38,10 +39,10 @@ export function TextField({
   );
 }
 
-export function TextArea({ name, label, hint, errors, required, rows = 5 }: Base & { rows?: number }) {
+export function TextArea({ name, label, hint, errors, required, rows = 5, placeholder, className }: Base & { rows?: number; placeholder?: string; className?: string }) {
   const err = errors[name];
   return (
-    <div className="field">
+    <div className={`field ${className ?? ""}`}>
       <label htmlFor={name}>
         {label}
         {required ? <span aria-hidden="true" className="text-gold"> *</span> : <span className="font-normal text-muted"> (optional)</span>}
@@ -51,6 +52,7 @@ export function TextArea({ name, label, hint, errors, required, rows = 5 }: Base
         id={name}
         name={name}
         rows={rows}
+        placeholder={placeholder}
         className="input"
         required={required}
         aria-invalid={err ? true : undefined}
@@ -75,11 +77,10 @@ export function ConsentBox({ errors, children }: { errors: FieldErrors; children
           aria-invalid={err ? true : undefined}
           aria-describedby={err ? "consent-error" : undefined}
         />
-        <label htmlFor="consent" className="!font-normal">
+        <label htmlFor="consent" className="!font-normal !text-[0.85rem] !mb-0">
           {children ?? (
             <>
-              I agree to be contacted about this request. See the{" "}
-              <Link href="/privacy" className="link">Privacy Policy</Link>.
+              I agree to be contacted about this request (<Link href="/privacy" className="link">privacy</Link>).
             </>
           )}
         </label>

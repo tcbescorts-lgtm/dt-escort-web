@@ -16,7 +16,7 @@ export default function About() {
       <PageIntro title="About D & T Escort Service" />
       <Container>
         <div className="grid gap-10 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] md:gap-16">
-          <div className="measure space-y-4 text-lg">
+          <div className="measure space-y-4">
             <p>
               {company.legalName} is a pilot car and oversize load escort company based in Jackson,
               Mississippi. We provide lead and chase escorts for heavy haul and project cargo, and high

@@ -2,17 +2,19 @@
 
 import { quoteSchema } from "@/lib/forms";
 import { company } from "@/lib/site";
+import CityField from "./CityField";
 import { ConsentBox, TextArea, TextField } from "./Field";
 import WebForm from "./WebForm";
 
 const labels = {
   name: "Name", phone: "Phone", email: "Email", pickup: "Pick up", dropoff: "Drop off",
-  date: "Date", notes: "Notes", consent: "Consent",
+  date: "Load date", notes: "Load details", consent: "Consent",
 };
 
-export default function QuoteForm() {
+export default function QuoteForm({ state }: { state?: string }) {
   return (
     <WebForm
+      compact
       schema={quoteSchema}
       labels={labels}
       subject={(d) => `Quote request: ${d.pickup} to ${d.dropoff} on ${d.date}`}
@@ -36,20 +38,20 @@ export default function QuoteForm() {
     >
       {(errors) => (
         <>
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="md:col-span-2"><TextField name="name" label="Name" required errors={errors} autoComplete="name" /></div>
-            <TextField name="phone" label="Phone" type="tel" required errors={errors} autoComplete="tel" inputMode="tel" />
-            <TextField name="email" label="Email" type="email" required errors={errors} autoComplete="email" />
-            <TextField name="pickup" label="Pick up" hint="City and state" required errors={errors} />
-            <TextField name="dropoff" label="Drop off" hint="City and state" required errors={errors} />
-            <TextField name="date" label="Date" type="date" hint="Load date" required errors={errors} />
+          <div className="grid grid-cols-2 gap-x-3 gap-y-3 md:grid-cols-3 md:gap-x-4">
+            <TextField name="name" label="Name" required errors={errors} autoComplete="name" placeholder="John Smith" />
+            <TextField name="phone" label="Phone" type="tel" required errors={errors} autoComplete="tel" inputMode="tel" placeholder="(601) 555-0142" />
+            <TextField name="email" label="Email" type="email" required errors={errors} autoComplete="email" placeholder="you@company.com" className="col-span-2 md:col-span-1" />
+            <CityField name="pickup" label="Pick up" required errors={errors} placeholder={state ? `City, ${state}` : "Houston, TX"} preferState={state} />
+            <CityField name="dropoff" label="Drop off" required errors={errors} placeholder="Jackson, MS" />
+            <TextField name="date" label="Load date" type="date" required errors={errors} className="col-span-2 md:col-span-1" />
           </div>
           <TextArea
             name="notes"
-            label="Notes"
-            hint="Height, width, length, weight, cargo type, and anything else we should know"
+            label="Load details"
             errors={errors}
-            rows={6}
+            rows={2}
+            placeholder={'e.g. 14\' W, 15\'6" H, 120\' L, 95,000 lb transformer'}
           />
           <ConsentBox errors={errors} />
         </>

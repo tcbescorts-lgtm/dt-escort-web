@@ -1,5 +1,5 @@
 import { Container, CtaBand, PageIntro, Split } from "@/components/Blocks";
-import { STATES_48 } from "@/lib/site";
+import UsMap from "@/components/UsMap";
 import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta({
@@ -44,17 +44,10 @@ export default function Coverage() {
       <Container>
         <section aria-labelledby="states-h">
           <h2 id="states-h" className="display-3">States we cover</h2>
-          <ul className="mt-5 grid grid-cols-2 gap-x-6 gap-y-1 sm:grid-cols-3 lg:grid-cols-6">
-            {STATES_48.map(([abbr, name]) => (
-              <li key={abbr} className="flex min-h-9 items-baseline gap-2">
-                <span aria-hidden="true" className="w-8 font-display font-bold text-gold">{abbr}</span>
-                {name}
-              </li>
-            ))}
-          </ul>
-          <p className="mt-6 text-muted measure">
-            We don&apos;t cover Alaska or Hawaii.
-          </p>
+          <p className="mt-1 text-sm text-muted">Select any state. We don&apos;t cover Alaska or Hawaii.</p>
+          <div className="mt-5">
+            <UsMap />
+          </div>
         </section>
 
         <div className="mt-12">

@@ -25,7 +25,7 @@ export default function Faq() {
         <div className="max-w-3xl border-t border-rule">
           {faqs.map((f) => (
             <section key={f.q} className="border-b border-rule py-6">
-              <h2 className="text-xl font-semibold">{f.q}</h2>
+              <h2 className="text-lg font-semibold">{f.q}</h2>
               <p className="mt-2 text-muted measure">{f.a}</p>
             </section>
           ))}

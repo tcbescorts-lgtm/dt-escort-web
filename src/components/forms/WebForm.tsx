@@ -17,9 +17,11 @@ type Props<S extends z.ZodTypeAny> = {
   children: (errors: FieldErrors) => React.ReactNode;
   /** Also record in the portal database (consent log / deletion queue). */
   recordType?: "quote" | "careers" | "deletion";
+  /** Tighter spacing, no separate "required" line; submit sits beside the consent box. */
+  compact?: boolean;
 };
 
-export default function WebForm<S extends z.ZodTypeAny>({ schema, labels, subject, toPayload, submitLabel, sendingLabel, success, children, recordType }: Props<S>) {
+export default function WebForm<S extends z.ZodTypeAny>({ schema, labels, subject, toPayload, submitLabel, sendingLabel, success, children, recordType, compact }: Props<S>) {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string>();
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
@@ -83,14 +85,16 @@ export default function WebForm<S extends z.ZodTypeAny>({ schema, labels, subjec
   }
 
   return (
-    <form ref={formRef} noValidate onSubmit={onSubmit} className="space-y-6">
+    <form ref={formRef} noValidate onSubmit={onSubmit} className={compact ? "space-y-3" : "space-y-6"}>
       <ErrorSummary errors={errors} formError={formError} labels={labels} />
-      <p className="text-muted">
-        Fields marked <span className="text-gold">*</span> are required.
-      </p>
+      {!compact && (
+        <p className="text-muted">
+          Fields marked <span className="text-gold">*</span> are required.
+        </p>
+      )}
       {children(errors)}
       <Honeypot />
-      <button type="submit" className="btn btn-gold" disabled={status === "sending"} aria-disabled={status === "sending"}>
+      <button type="submit" className={`btn btn-gold ${compact ? "w-full sm:w-auto" : ""}`} disabled={status === "sending"} aria-disabled={status === "sending"}>
         {status === "sending" ? sendingLabel : submitLabel}
       </button>
     </form>
