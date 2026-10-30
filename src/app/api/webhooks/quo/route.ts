@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { company } from "@/lib/site";
 
 export const runtime = "nodejs";
 
@@ -57,6 +58,12 @@ export async function POST(req: NextRequest) {
   const external: string | undefined = c.participants?.external?.[0];
   const from = r.from ?? c.senderIdentifier ?? (r.direction === "outgoing" ? workspace : external) ?? null;
   const to = (Array.isArray(r.to) ? r.to[0] : r.to) ?? c.recipientIdentifiers?.[0] ?? (r.direction === "outgoing" ? external : workspace) ?? null;
+
+  // Only keep activity on D & T's own line (other numbers in the same Quo workspace are ignored).
+  const last10 = (n: string | null | undefined) => (n ?? "").replace(/\D/g, "").slice(-10);
+  const ours = last10(process.env.QUO_ONLY_NUMBER || company.phoneE164);
+  const ourSide = workspace ?? (r.direction === "outgoing" ? from : to);
+  if (ours && last10(ourSide) !== ours) return NextResponse.json({ ok: true, ignored: "other number" });
 
   const admin = supabaseAdmin();
   const { error } = await admin.from("comms").upsert(
