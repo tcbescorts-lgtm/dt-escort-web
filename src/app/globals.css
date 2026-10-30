@@ -1,0 +1,207 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   Design tokens. Every text/background pairing is checked by
+   scripts/contrast.mjs (run: npm run contrast). Dark is the default.
+   ------------------------------------------------------------------ */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0b0b0c;
+  --surface: #141416;
+  --surface-2: #1c1c1f;
+  --rule: #2a2a2e;          /* decorative dividers only (not UI boundaries) */
+  --field: #6b6b72;         /* form + control borders, >= 3:1 on bg and surface */
+  --text: #f5f1e6;
+  --muted: #b9b4a6;
+  --gold: #d4af37;          /* gold text, icons, focus */
+  --gold-fill: #d4af37;     /* button fill */
+  --on-gold: #0b0b0c;
+  --error: #ff9b8f;
+  --success: #8fd8a6;
+  --focus: #d4af37;
+  --gold-edge: #d4af37;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #faf8f3;
+  --surface: #ffffff;
+  --surface-2: #f2eee4;
+  --rule: #e4dfd2;
+  --field: #8a8578;
+  --text: #1a1a1a;
+  --muted: #4a4a4a;
+  --gold: #7d610d;          /* darker gold: #D4AF37 fails on white; #8C6D0F only 4.2:1 on alt panels */
+  --gold-fill: #d4af37;
+  --on-gold: #1a1a1a;
+  --error: #b3261e;
+  --success: #1e6b3a;
+  --focus: #7d610d;
+  --gold-edge: #7d610d;     /* outlines the gold button so its shape reads on cream */
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-rule: var(--rule);
+  --color-field: var(--field);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-gold: var(--gold);
+  --color-gold-fill: var(--gold-fill);
+  --color-on-gold: var(--on-gold);
+  --color-error: var(--error);
+  --color-success: var(--success);
+  --font-sans: var(--font-body), system-ui, sans-serif;
+  --font-display: var(--font-condensed), "Arial Narrow", sans-serif;
+}
+
+html {
+  background: var(--bg);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+}
+
+@layer components {
+/* Type scale (modular, ~1.25) */
+.display-1 {
+  font-family: var(--font-condensed), "Arial Narrow", sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.6rem, 7.2vw, 5.4rem);
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+}
+.display-2 {
+  font-family: var(--font-condensed), "Arial Narrow", sans-serif;
+  font-weight: 700;
+  font-size: clamp(2rem, 4.4vw, 3.2rem);
+  line-height: 1.02;
+}
+.display-3 {
+  font-family: var(--font-condensed), "Arial Narrow", sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.45rem, 2.4vw, 1.85rem);
+  line-height: 1.12;
+}
+.lede {
+  font-size: clamp(1.125rem, 1.6vw, 1.3rem);
+  line-height: 1.5;
+  color: var(--muted);
+  max-width: 40rem;
+}
+.measure { max-width: 42rem; }
+
+/* Long-form text (legal pages, articles) */
+.prose-dt { max-width: 44rem; }
+.prose-dt h2 {
+  font-family: var(--font-condensed), sans-serif;
+  font-weight: 700;
+  font-size: 1.7rem;
+  line-height: 1.15;
+  margin: 2.4rem 0 0.6rem;
+}
+.prose-dt h3 { font-weight: 600; font-size: 1.15rem; margin: 1.6rem 0 0.4rem; }
+.prose-dt p, .prose-dt ul, .prose-dt ol, .prose-dt table { margin: 0 0 1rem; }
+.prose-dt ul { list-style: disc; padding-left: 1.25rem; }
+.prose-dt ol { list-style: decimal; padding-left: 1.4rem; }
+.prose-dt li { margin: 0.25rem 0; }
+.prose-dt a, a.link {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+}
+.prose-dt a:hover, a.link:hover { text-decoration-thickness: 2px; }
+.prose-dt table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.prose-dt th, .prose-dt td { text-align: left; vertical-align: top; padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--rule); }
+.prose-dt th { font-weight: 600; }
+
+/* Buttons: 48px tall minimum (touch target >= 44px) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0.7rem 1.35rem;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  font-size: 1.0625rem;
+  line-height: 1.1;
+  text-decoration: none;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+.btn-gold { background: var(--gold-fill); color: var(--on-gold); border-color: var(--gold-edge); }
+.btn-gold:hover { filter: brightness(1.08); }
+.btn-line { border-color: var(--field); color: var(--text); background: transparent; }
+.btn-line:hover { border-color: var(--gold); }
+.btn[disabled] { opacity: 0.6; cursor: progress; }
+
+/* Focus: always visible for keyboard users */
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 100;
+  background: var(--gold-fill);
+  color: var(--on-gold);
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  border-radius: 0.25rem;
+}
+.skip-link:focus { top: 1rem; }
+
+/* Forms */
+.field label, .field .label { display: block; font-weight: 600; margin-bottom: 0.35rem; }
+.field .hint { display: block; color: var(--muted); font-size: 0.95rem; margin-top: -0.15rem; margin-bottom: 0.4rem; }
+.input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.65rem 0.8rem;
+  background: var(--surface);
+  color: var(--text);
+  border: 1.5px solid var(--field);
+  border-radius: 0.375rem;
+  font: inherit;
+}
+textarea.input { min-height: 8rem; resize: vertical; }
+.input:focus-visible { outline-offset: 1px; }
+.input[aria-invalid="true"] { border-color: var(--error); border-width: 2px; }
+.field-error { color: var(--error); font-size: 0.95rem; margin-top: 0.35rem; font-weight: 500; }
+.check { display: flex; gap: 0.75rem; align-items: flex-start; }
+.check input[type="checkbox"] { width: 1.5rem; height: 1.5rem; margin-top: 0.1rem; accent-color: var(--gold-fill); flex: none; }
+.hp { position: absolute !important; left: -10000px !important; width: 1px; height: 1px; overflow: hidden; }
+
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Leave room for the mobile call bar */
+@media (max-width: 767px) {
+  body { padding-bottom: 4.75rem; }
+}
