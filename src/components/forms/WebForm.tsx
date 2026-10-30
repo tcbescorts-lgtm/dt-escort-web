@@ -15,9 +15,11 @@ type Props<S extends z.ZodTypeAny> = {
   sendingLabel: string;
   success: React.ReactNode;
   children: (errors: FieldErrors) => React.ReactNode;
+  /** Also record in the portal database (consent log / deletion queue). */
+  recordType?: "quote" | "careers" | "deletion";
 };
 
-export default function WebForm<S extends z.ZodTypeAny>({ schema, labels, subject, toPayload, submitLabel, sendingLabel, success, children }: Props<S>) {
+export default function WebForm<S extends z.ZodTypeAny>({ schema, labels, subject, toPayload, submitLabel, sendingLabel, success, children, recordType }: Props<S>) {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string>();
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
@@ -57,6 +59,9 @@ export default function WebForm<S extends z.ZodTypeAny>({ schema, labels, subjec
       consent: `Agreed to be contacted (${new Date().toISOString()})`,
     });
     if (result.ok) {
+      if (recordType) {
+        fetch("/api/public/record", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: recordType, ...(data as object) }) }).catch(() => {});
+      }
       setStatus("sent");
       requestAnimationFrame(() => doneRef.current?.focus());
     } else {

@@ -1,11 +1,16 @@
 import Link from "next/link";
 import { Container } from "@/components/Blocks";
 import { company } from "@/lib/site";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export const metadata = { title: "Page not found", robots: { index: false } };
 
 export default function NotFound() {
   return (
+    <>
+    <Header />
+    <main id="main">
     <Container className="py-20 md:py-28">
       <p className="font-display text-7xl font-extrabold text-gold" aria-hidden="true">404</p>
       <h1 className="display-2 mt-2">This page isn&apos;t on the route</h1>
@@ -17,5 +22,8 @@ export default function NotFound() {
         <li><a href={company.telHref} className="btn btn-line">Call {company.phoneDisplay}</a></li>
       </ul>
     </Container>
+    </main>
+    <Footer />
+    </>
   );
 }

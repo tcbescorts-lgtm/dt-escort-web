@@ -21,6 +21,7 @@ export default function QuoteForm() {
         "Pick up": d.pickup, "Drop off": d.dropoff, Date: d.date, Notes: d.notes || "(none)",
         replyto: d.email,
       })}
+      recordType="quote"
       submitLabel="Send quote request"
       sendingLabel="Sending…"
       success={

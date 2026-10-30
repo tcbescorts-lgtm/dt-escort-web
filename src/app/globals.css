@@ -21,6 +21,10 @@
   --success: #8fd8a6;
   --focus: #d4af37;
   --gold-edge: #d4af37;
+  /* chart series (validated: dataviz validate_palette, dark surface) */
+  --c1: #a68623;
+  --c2: #5b8fd8;
+  --grid: #2a2a2e;
 }
 
 :root[data-theme="light"] {
@@ -39,6 +43,9 @@
   --success: #1e6b3a;
   --focus: #7d610d;
   --gold-edge: #7d610d;     /* outlines the gold button so its shape reads on cream */
+  --c1: #a8841a;
+  --c2: #2f6fb8;
+  --grid: #e4dfd2;
 }
 
 @theme inline {

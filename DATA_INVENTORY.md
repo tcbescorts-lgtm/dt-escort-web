@@ -45,8 +45,27 @@ Response time: 30 days after verification.
 | `dt-theme` | Remembers dark/light mode | Yes (user preference) |
 | `dt-consent` | Remembers cookie choice, version and date | Yes |
 
-## Portal (Phase 4 onward)
-Will be filled in table by table as the schema is built. Rules decided now:
-- No SSNs anywhere. No card numbers (Stripe holds them).
-- Driver DOB, license number and VIN are visible to owner and admin only, encrypted at rest where practical, and every view or edit is written to `audit_log`.
-- Payment account details are masked (last 4 only).
+## Public forms also write to the portal database
+- Quote and careers forms: a consent record (email, purpose, time) in `consent_log`.
+- Deletion form: the request in `deletion_requests` (name, email, scope, details) so it can be tracked to completion within 30 days.
+
+## Portal data
+| Table | Personal data | Why | Who can see it |
+|---|---|---|---|
+| profiles | Name, email, phone, role | Sign-in and permissions | Self; owner/admin |
+| drivers | Name, phone, email, home address, emergency contact, employment type, start date, positions, split %, license state/class/expiry, equipment, payment method + last 4 only, notes | Dispatching, state compliance, paying drivers | Owner/admin; the driver sees their own row |
+| driver_internal | Rating / performance notes | Internal management | Owner/admin only (drivers have no access) |
+| driver_private | Date of birth, driver license number, VIN | Required by some states/customers | Owner/admin only, through audited functions |
+| vehicles, certifications, driver_documents | Vehicle details, certification/permit numbers, insurance, W-9 and agreement files | Compliance and expiry alerts | Owner/admin; driver sees own |
+| customers, customer_rate_cards | Business contacts, billing email/phone | Booking and invoicing | Owner/admin; a driver sees only the company/contact on their assigned loads, never rates |
+| loads | Truck driver name and phone, route, cargo dimensions | Running the escort | Owner/admin; assigned drivers |
+| run_sheets (+ legs, files, events) | Trip details, odometer, times, optional GPS stamps (only when the driver taps to share), signatures, receipts and photos | Billing and records | Owner/admin; the driver who wrote it |
+| invoices, invoice_items, payments, email_events | Bill-to name/email, amounts, payment references | Billing and collections | Owner/admin |
+| driver_settlements | Pay periods, cash advances, payout references | Paying drivers | Owner/admin; driver sees own |
+| notifications, push_subscriptions | Alert text; browser push endpoint | Alerts | The user it belongs to |
+| todos | Task text | Office work | Owner/admin |
+| login_attempts | Email + success flag + time | Lockout after repeated failures | Server only |
+| audit_log | Who changed what | Accountability | Owner only |
+| consent_log, deletion_requests, suppression_list | Email, purpose | Legal compliance | Owner/admin |
+
+Never collected: Social Security numbers, card numbers, full bank account numbers.

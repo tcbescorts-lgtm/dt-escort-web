@@ -28,7 +28,8 @@ export default function CareersClient() {
                 name: d.name, phone: d.phone, email: d.email, "Home state": d.homeState,
                 Certifications: d.certifications || "(none listed)", Notes: d.notes || "(none)", replyto: d.email,
               })}
-              submitLabel="Send"
+              recordType="careers"
+      submitLabel="Send"
               sendingLabel="Sending…"
               success={
                 <>

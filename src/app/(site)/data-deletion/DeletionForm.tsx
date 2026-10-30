@@ -24,6 +24,7 @@ export default function DeletionForm() {
         Details: d.details || "(none)", replyto: d.email,
         "Next step": "Verify by emailing the requester before deleting anything.",
       })}
+      recordType="deletion"
       submitLabel="Send deletion request"
       sendingLabel="Sending…"
       success={

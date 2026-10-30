@@ -48,6 +48,11 @@ export default function Footer() {
             <li>
               <CookieSettingsLink />
             </li>
+            <li>
+              <Link href="/login" className="inline-flex min-h-11 items-center hover:text-gold underline-offset-4 hover:underline">
+                Staff and driver sign in
+              </Link>
+            </li>
           </ul>
         </nav>
       </div>

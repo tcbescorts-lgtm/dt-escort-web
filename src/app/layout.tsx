@@ -1,12 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { barlow, barlowCondensed } from "./fonts";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import CallBar from "@/components/CallBar";
-import CookieBanner from "@/components/CookieBanner";
 import { themeInitScript } from "@/components/ThemeToggle";
-import { JsonLd, localBusinessLd } from "@/components/JsonLd";
 import { SITE_URL, company } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -37,17 +32,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" data-theme="dark" suppressHydrationWarning className={`${barlow.variable} ${barlowCondensed.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        <JsonLd data={localBusinessLd} />
       </head>
       <body>
         <a href="#main" className="skip-link">Skip to main content</a>
-        <Header />
-        <main id="main" tabIndex={-1} className="focus:outline-none">
-          {children}
-        </main>
-        <Footer />
-        <CallBar />
-        <CookieBanner />
+        {children}
       </body>
     </html>
   );
