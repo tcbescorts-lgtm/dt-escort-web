@@ -1,4 +1,8 @@
 import "server-only";
+// pdfkit loads its built-in fonts through a package "imports" alias that Vercel's file tracer misses.
+// Requiring them here by their public path makes sure the files ship with the server function.
+import "pdfkit/standard-fonts/Helvetica";
+import "pdfkit/standard-fonts/HelveticaBold";
 import { Document, Page, StyleSheet, Text, View, Image, renderToBuffer } from "@react-pdf/renderer";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";

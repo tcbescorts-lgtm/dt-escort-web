@@ -1,10 +1,14 @@
 import type { NextConfig } from "next";
 
+const pdfFiles = ["./node_modules/pdfkit/js/standard-fonts/**/*", "./node_modules/pdfkit/js/data/**/*", "./public/brand/dt-logo-graygold.png"];
+
 const nextConfig: NextConfig = {
-  // react-pdf loads its built-in fonts (pdfkit standard fonts) at runtime; ship them with the server functions.
-  serverExternalPackages: ["@react-pdf/renderer", "pdfkit"],
+  // react-pdf (pdfkit) loads its built-in fonts at runtime; ship them with every function that renders a PDF.
   outputFileTracingIncludes: {
-    "/**": ["./node_modules/pdfkit/js/standard-fonts/**/*", "./node_modules/pdfkit/js/data/**/*", "./public/brand/dt-logo-graygold.png"],
+    "/**": pdfFiles,
+    "/portal/invoices/[id]/pdf": pdfFiles,
+    "/portal/invoices/[id]": pdfFiles,
+    "/i/[token]/pdf": pdfFiles,
   },
 };
 
