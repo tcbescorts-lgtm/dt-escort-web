@@ -37,7 +37,7 @@ export default async function PortalLayout({ children }: { children: React.React
             <label htmlFor="top-q" className="sr-only">Search the portal</label>
             <input id="top-q" name="q" className="input !min-h-9 !py-1 text-sm" placeholder="🔎 Search loads, customers, drivers, invoices" />
           </form>
-          <span className="text-sm text-muted">{me.fullName || me.email} · {me.role === "owner" ? "Owner" : "Admin"}</span>
+          <span className="text-sm text-muted">{me.fullName && !["Owner", "Admin"].includes(me.fullName) ? me.fullName : me.email} · {me.role === "owner" ? "Owner" : "Admin"}</span>
           <Link href="/account/password" className="text-sm underline-offset-4 hover:underline">Change password</Link>
           <form action={signOut}><button className="btn btn-line !min-h-9 !py-1 text-sm">Sign out</button></form>
           <ThemeToggle />
