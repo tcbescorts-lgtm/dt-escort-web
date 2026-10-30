@@ -43,12 +43,15 @@ export function Badge({ status, label }: { status: string; label: string }) {
   );
 }
 
-export function Stat({ label, value, hint }: { label: string; value: React.ReactNode; hint?: string }) {
+/** KPI tile. `delta` compares with last month: positive is shown green with an up arrow. */
+export function Stat({ label, value, hint, delta, big }: { label: string; value: React.ReactNode; hint?: string; delta?: { text: string; up: boolean } | null; big?: boolean }) {
   return (
     <div className="rounded-md border border-rule bg-surface px-3 py-2.5">
-      <p className="text-xs text-muted">{label}</p>
-      <p className="mt-0.5 text-xl font-bold leading-tight tabular-nums">{value}</p>
-      {hint && <p className="text-xs text-muted">{hint}</p>}
+      <p className={`${big ? "text-[1.7rem]" : "text-xl"} font-bold leading-none tabular-nums`}>{value}</p>
+      <p className="mt-1 text-xs font-medium">{label}</p>
+      {delta ? (
+        <p className={`text-xs font-semibold ${delta.up ? "text-success" : "text-error"}`}>{delta.up ? "▲" : "▼"} {delta.text} <span className="font-normal text-muted">vs last month</span></p>
+      ) : hint ? <p className="text-xs text-muted">{hint}</p> : null}
     </div>
   );
 }

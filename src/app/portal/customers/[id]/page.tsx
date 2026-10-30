@@ -16,7 +16,7 @@ export default async function CustomerDetail({ params, searchParams }: { params:
   const [{ data: c }, { data: loads }, { data: invoices }] = await Promise.all([
     sb.from("customers").select("*, customer_rate_cards(*)").eq("id", id).single(),
     sb.from("loads").select("id, load_no, load_date, pickup, dropoff, status").or(`customer_id.eq.${id},invoice_customer_id.eq.${id}`).order("load_date", { ascending: false }).limit(100),
-    sb.from("invoices").select("id, number, issue_date, total, amount_paid, status, paid_at").eq("customer_id", id).neq("status", "void").order("issue_date", { ascending: false }),
+    sb.from("invoices").select("id, number, issue_date, total, amount_paid, status, paid_at").eq("customer_id", id).neq("status", "void").is("archived_at", null).order("issue_date", { ascending: false }),
   ]);
   if (!c) notFound();
   const billed = (invoices ?? []).reduce((a, i) => a + Number(i.total), 0);

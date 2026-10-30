@@ -16,7 +16,7 @@ function Msg({ s }: { s?: { ok?: string; error?: string } }) {
   return s.error ? <p role="alert" className="mt-2 font-medium text-error">{s.error}</p> : s.ok ? <p role="status" className="mt-2 font-medium text-success">{s.ok}</p> : null;
 }
 
-export default function InvoiceEditor({ inv, items, publicUrl }: { inv: any; items: any[]; publicUrl: string }) {
+export default function InvoiceEditor({ inv, items, publicUrl, mailto, hasPayInfo }: { inv: any; items: any[]; publicUrl: string; mailto: string; hasPayInfo: boolean }) {
   const [saveState, saveAction, saving] = useActionState(saveInvoice, undefined);
   const [sendState, sendAction, sending] = useActionState(sendInvoice, undefined);
   const [linkState, linkAction, linking] = useActionState(createPaymentLink, undefined);
@@ -28,7 +28,7 @@ export default function InvoiceEditor({ inv, items, publicUrl }: { inv: any; ite
   const locked = inv.status === "void";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <form action={saveAction} className="space-y-4">
         <input type="hidden" name="id" value={inv.id} />
         <input type="hidden" name="items_json" value={JSON.stringify(rows.map((r) => ({ kind: r.kind, description: r.description, qty: r.qty, rate: r.rate })))} />
@@ -58,7 +58,7 @@ export default function InvoiceEditor({ inv, items, publicUrl }: { inv: any; ite
             </tbody>
           </table>
         </div>
-        <p className="text-sm text-muted">For a quick pay deduction, use type “QP fee deduction” with a negative rate.</p>
+        <p className="text-sm text-muted">For a quick pay deduction, use the type QP fee deduction with a negative rate.</p>
         <div className="flex flex-wrap gap-2">
           <button type="button" className="btn btn-line" onClick={() => setRows((rs) => [...rs, { key: k(), kind: "adjustment", description: "", qty: "1", rate: "" }])}>Add line</button>
         </div>
@@ -67,15 +67,17 @@ export default function InvoiceEditor({ inv, items, publicUrl }: { inv: any; ite
         <Msg s={saveState} />
       </form>
 
-      <section aria-labelledby="send-h" className="rounded-md border border-rule p-4">
-        <h2 id="send-h" className="text-lg font-semibold">Send and share</h2>
-        <p className="mt-1 text-muted">Save first. Sending emails the PDF and a link to {inv.bill_to_email || "the bill-to email"}. Delivery and opens are tracked.</p>
+      <section aria-labelledby="send-h" className="rounded-md border border-rule bg-surface p-4">
+        <h2 id="send-h" className="font-bold">✉️ Send to the customer</h2>
+        <p className="mt-1 text-sm text-muted">Save first. The email includes the PDF, the online invoice link and your payment information.</p>
+        {!hasPayInfo && <p className="mt-2 rounded-md border border-gold-fill p-2 text-sm">Your payment details (Zelle, Cash App, ACH, check) aren&apos;t filled in yet. Add them in <a className="link" href="/portal/settings#pay">Settings</a> so they print on the invoice.</p>}
         <div className="mt-3 flex flex-wrap gap-2">
           <form action={sendAction}><input type="hidden" name="id" value={inv.id} /><button className="btn btn-gold" disabled={sending || locked}>{sending ? "Sending…" : inv.sent_at ? "Send again" : "Send invoice"}</button></form>
           {inv.sent_at && Number(inv.amount_paid) < Number(inv.total) && (
             <form action={sendAction}><input type="hidden" name="id" value={inv.id} /><input type="hidden" name="reminder" value="1" /><button className="btn btn-line" disabled={sending}>Send payment reminder</button></form>
           )}
-          <a className="btn btn-line" href={`/portal/invoices/${inv.id}/pdf`} target="_blank" rel="noopener noreferrer">Download PDF<span className="sr-only"> (opens in a new tab)</span></a>
+          <a className="btn btn-line" href={mailto}>Email from my mail app</a>
+          <a className="btn btn-line" href={`/portal/invoices/${inv.id}/pdf`} target="_blank" rel="noopener noreferrer">View PDF<span className="sr-only"> (opens in a new tab)</span></a>
           <button type="button" className="btn btn-line" onClick={async () => { await navigator.clipboard.writeText(publicUrl); setCopied(true); }}>{copied ? "Link copied" : "Copy invoice link"}</button>
           <form action={linkAction}><input type="hidden" name="id" value={inv.id} /><button className="btn btn-line" disabled={linking || locked}>{inv.stripe_payment_link_url ? "Refresh online payment link" : "Add online payment link"}</button></form>
         </div>
@@ -83,8 +85,8 @@ export default function InvoiceEditor({ inv, items, publicUrl }: { inv: any; ite
         {inv.stripe_payment_link_url && <p className="mt-2 text-sm">Payment link: <a className="link break-all" href={inv.stripe_payment_link_url} target="_blank" rel="noopener noreferrer">{inv.stripe_payment_link_url}</a></p>}
       </section>
 
-      <section aria-labelledby="pay-h" className="rounded-md border border-rule p-4">
-        <h2 id="pay-h" className="text-lg font-semibold">Mark as paid</h2>
+      <section aria-labelledby="pay-h" className="rounded-md border border-rule bg-surface p-4">
+        <h2 id="pay-h" className="font-bold">💵 Mark as paid</h2>
         <form action={payAction} className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
           <input type="hidden" name="invoice_id" value={inv.id} />
           <div className="field"><label htmlFor="pa">Amount ($)</label><input id="pa" name="amount" type="number" step="0.01" defaultValue={Math.max(0, Number(inv.total) - Number(inv.amount_paid)).toFixed(2)} className="input" /></div>

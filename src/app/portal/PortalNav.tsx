@@ -7,7 +7,7 @@ import { signOut } from "@/app/login/actions";
 
 type Item = { href: string; label: string; count?: number; owner?: boolean };
 
-export default function PortalNav({ role, unread, pendingSheets }: { role: string; unread: number; pendingSheets: number }) {
+export default function PortalNav({ role, unread, pendingSheets, unreadComms = 0 }: { role: string; unread: number; pendingSheets: number; unreadComms?: number }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [path]);
@@ -18,10 +18,12 @@ export default function PortalNav({ role, unread, pendingSheets }: { role: strin
     { href: "/portal/loads", label: "Loads" },
     { href: "/portal/run-sheets", label: "Run sheets", count: pendingSheets },
     { href: "/portal/invoices", label: "Invoices" },
-    { href: "/portal/driver-runs", label: "Driver runs" },
+    { href: "/portal/driver-runs", label: "Driver pay" },
     { href: "/portal/customers", label: "Customers" },
     { href: "/portal/drivers", label: "Drivers" },
     { href: "/portal/reports", label: "Reports", owner: true },
+    { href: "/portal/map", label: "Map" },
+    { href: "/portal/messages", label: "Calls and texts", count: unreadComms },
     { href: "/portal/notifications", label: "Notifications", count: unread },
     { href: "/portal/search", label: "Search" },
     { href: "/portal/settings", label: "Settings" },
@@ -38,7 +40,7 @@ export default function PortalNav({ role, unread, pendingSheets }: { role: strin
         aria-controls="portal-nav"
         onClick={() => setOpen((o) => !o)}
       >
-        Menu{unread + pendingSheets > 0 ? ` (${unread + pendingSheets} new)` : ""}
+        Menu{unread + pendingSheets + unreadComms > 0 ? ` (${unread + pendingSheets + unreadComms} new)` : ""}
       </button>
       <nav id="portal-nav" aria-label="Portal" className={`${open ? "block" : "hidden"} px-2 pb-4 lg:block`}>
         <ul className="space-y-0.5">

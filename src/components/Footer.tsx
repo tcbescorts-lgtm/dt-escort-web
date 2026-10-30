@@ -57,8 +57,8 @@ export default function Footer() {
         <nav aria-label="Site" className="md:col-span-4">
           <Heading>Site</Heading>
           <div className="grid grid-cols-2 gap-x-6">
-            <Col items={siteLinks.slice(0, 4)} />
-            <Col items={siteLinks.slice(4)} />
+            <Col items={siteLinks.slice(0, 6)} />
+            <Col items={siteLinks.slice(6)} />
           </div>
         </nav>
 

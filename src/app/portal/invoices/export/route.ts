@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
       ...(data ?? []).map((p: any) => [p.paid_on, p.invoices?.bill_to_name, p.invoices?.number, Number(p.amount).toFixed(2), p.method, p.reference, p.source]),
     ]);
   } else {
-    const { data } = await sb.from("invoices").select("number, bill_to_name, issue_date, due_date, status, total, amount_paid, invoice_items(description, qty, rate, amount, kind), loads(load_no)").neq("status", "void").order("issue_date");
+    const { data } = await sb.from("invoices").select("number, bill_to_name, issue_date, due_date, status, total, amount_paid, invoice_items(description, qty, rate, amount, kind), loads(load_no)").neq("status", "void").is("archived_at", null).order("issue_date");
     const rows: (string | number | null)[][] = [["InvoiceNo", "Customer", "InvoiceDate", "DueDate", "ItemDescription", "ItemQuantity", "ItemRate", "ItemAmount", "ServiceType", "LoadNo", "Status", "InvoiceTotal", "AmountPaid"]];
     for (const i of (data ?? []) as any[]) {
       for (const it of i.invoice_items ?? []) {

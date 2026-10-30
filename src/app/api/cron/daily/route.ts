@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
   }
 
   // 2. overdue invoices
-  const { data: overdue } = await admin.from("invoices").select("id, number, bill_to_name, total, amount_paid").lt("due_date", today).in("status", ["sent", "delivered", "viewed", "partial"]);
+  const { data: overdue } = await admin.from("invoices").select("id, number, bill_to_name, total, amount_paid").lt("due_date", today).is("archived_at", null).in("status", ["sent", "delivered", "viewed", "partial"]);
   for (const i of overdue ?? []) {
     if (Number(i.amount_paid) >= Number(i.total)) continue;
     await admin.from("invoices").update({ status: "overdue" }).eq("id", i.id);
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
   const [{ count: active }, { count: pending }, { data: open }] = await Promise.all([
     admin.from("loads").select("id", { count: "exact", head: true }).in("status", ["booked", "assigned", "in_progress"]),
     admin.from("run_sheets").select("id", { count: "exact", head: true }).eq("status", "submitted"),
-    admin.from("invoices").select("total, amount_paid").in("status", ["sent", "delivered", "viewed", "partial", "overdue"]),
+    admin.from("invoices").select("total, amount_paid").in("status", ["sent", "delivered", "viewed", "partial", "overdue"]).is("archived_at", null),
   ]);
   const receivable = (open ?? []).reduce((a, i) => a + Number(i.total) - Number(i.amount_paid), 0);
   for (const o of (staff ?? []).filter((s) => s.role === "owner")) {

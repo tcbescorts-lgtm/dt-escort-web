@@ -28,6 +28,9 @@ export async function saveSettings(form: FormData) {
   } else if (section === "billing") {
     await put("payment_instructions", { text: String(form.get("payment_text") ?? "").trim() });
     await put("invoice_terms_days", Number(form.get("terms_days") ?? 14) || 14);
+  } else if (section === "payment") {
+    const keys = ["zelle", "cashapp", "check_payable", "check_mail", "ach_name", "ach_bank", "ach_routing", "ach_account", "online_fee_note", "other"];
+    await put("payment_info", Object.fromEntries(keys.map((k) => [k, String(form.get(k) ?? "").trim()])));
   } else if (section === "email") {
     await put("email_templates", { invoice_subject: String(form.get("invoice_subject") ?? ""), invoice_body: String(form.get("invoice_body") ?? "") });
   } else if (section === "extras") {

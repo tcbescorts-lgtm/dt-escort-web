@@ -4,7 +4,7 @@ import { supabaseServer } from "@/lib/supabase/server";
 export async function reportData(from: string, to: string) {
   const sb = await supabaseServer();
   const [{ data: inv }, { data: runs }, { data: sheets }] = await Promise.all([
-    sb.from("invoices").select("issue_date, total, amount_paid, bill_to_name, status").neq("status", "void").gte("issue_date", from).lte("issue_date", to),
+    sb.from("invoices").select("issue_date, total, amount_paid, bill_to_name, status").neq("status", "void").is("archived_at", null).gte("issue_date", from).lte("issue_date", to),
     sb.from("driver_runs").select("*").gte("run_date", from).lte("run_date", to),
     sb.from("run_sheets").select("invoice_date, total_miles, drivers(full_name)").in("status", ["submitted", "approved"]).gte("invoice_date", from).lte("invoice_date", to),
   ]);

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import AuthShell from "@/components/portal/AuthShell";
 import { company, fullAddress } from "@/lib/site";
 import { date, money } from "@/lib/format";
+import { paymentLines } from "@/lib/payment-info";
 
 export const metadata: Metadata = { title: "Invoice", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -15,9 +16,11 @@ export default async function PublicInvoice({ params, searchParams }: { params: 
   const { supabaseAdmin } = await import("@/lib/supabase/admin");
   const admin = supabaseAdmin();
   const { data: inv } = await admin.from("invoices").select("*, loads(load_no, pickup, dropoff)").eq("public_token", token).maybeSingle();
-  if (!inv || inv.status === "void" || inv.status === "draft") notFound();
+  if (!inv || inv.status === "void" || inv.status === "draft" || inv.archived_at) notFound();
   const { data: items } = await admin.from("invoice_items").select("description, qty, rate, amount").eq("invoice_id", inv.id).order("seq");
-  const { data: pay } = await admin.from("settings").select("value").eq("key", "payment_instructions").maybeSingle();
+  const { data: st } = await admin.from("settings").select("key, value").in("key", ["payment_instructions", "payment_info"]);
+  const sv = Object.fromEntries((st ?? []).map((r) => [r.key, r.value])) as Record<string, any>;
+  const methods = paymentLines(sv.payment_info);
   if (["sent", "delivered", "failed"].includes(inv.status)) {
     await admin.from("invoices").update({ status: "viewed", viewed_at: new Date().toISOString() }).eq("id", inv.id);
   }
@@ -30,6 +33,7 @@ export default async function PublicInvoice({ params, searchParams }: { params: 
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="display-2">Invoice {inv.number}</h1>
+            <p className="text-sm text-muted">{company.legalName}</p>
             <p className="text-muted">Issued {date(inv.issue_date)}{inv.due_date ? ` · due ${date(inv.due_date)}` : ""}</p>
           </div>
           <div className="text-right">
@@ -44,17 +48,23 @@ export default async function PublicInvoice({ params, searchParams }: { params: 
         <div className="mt-6 overflow-x-auto rounded-md border border-rule">
           <table className="w-full min-w-[480px] text-left">
             <caption className="sr-only">Invoice lines</caption>
-            <thead className="bg-surface-2"><tr><th scope="col" className="p-2">Description</th><th scope="col" className="p-2 text-right">Qty</th><th scope="col" className="p-2 text-right">Rate</th><th scope="col" className="p-2 text-right">Amount</th></tr></thead>
-            <tbody>{(items ?? []).map((i, n) => <tr key={n} className="border-t border-rule"><td className="p-2">{i.description}</td><td className="p-2 text-right">{Number(i.qty)}</td><td className="p-2 text-right">{money(i.rate)}</td><td className="p-2 text-right">{money(i.amount)}</td></tr>)}</tbody>
+            <thead className="bg-surface-2"><tr><th scope="col" className="p-2">Description</th><th scope="col" className="p-2 text-right">Rate</th><th scope="col" className="p-2 text-right">Qty</th><th scope="col" className="p-2 text-right">Amount</th></tr></thead>
+            <tbody>{(items ?? []).map((i, n) => <tr key={n} className="border-t border-rule"><td className="p-2">{i.description}</td><td className="p-2 text-right">{money(i.rate)}</td><td className="p-2 text-right">{Number(i.qty)}</td><td className="p-2 text-right">{money(i.amount)}</td></tr>)}</tbody>
             <tfoot><tr className="border-t-2 border-field"><th scope="row" colSpan={3} className="p-2 text-right">Total</th><td className="p-2 text-right font-bold">{money(inv.total)}</td></tr>
               {Number(inv.amount_paid) > 0 && <tr><th scope="row" colSpan={3} className="p-2 text-right font-normal">Paid</th><td className="p-2 text-right">{money(inv.amount_paid)}</td></tr>}</tfoot>
           </table>
         </div>
         <div className="mt-6 rounded-md border border-rule p-4">
           <h2 className="text-lg font-semibold">How to pay</h2>
-          <p className="mt-1">{(pay?.value as any)?.text ?? "Contact dispatch for payment details."}</p>
+          {methods.length === 0 ? <p className="mt-1">{sv.payment_instructions?.text || "Contact dispatch for payment details."}</p> : (
+            <dl className="mt-2 grid gap-3 sm:grid-cols-2">
+              {methods.map((m) => <div key={m.label}><dt className="text-sm font-semibold">{m.label}</dt>{m.lines.map((l) => <dd key={l}>{l}</dd>)}</div>)}
+            </dl>
+          )}
+          {sv.payment_info?.online_fee_note && <p className="mt-2 text-sm text-muted">{sv.payment_info.online_fee_note}</p>}
           {inv.stripe_payment_link_url && balance > 0 && <a href={inv.stripe_payment_link_url} className="btn btn-gold mt-3">Pay {money(balance)} online</a>}
         </div>
+        <p className="mt-4"><a className="link" href={`/i/${token}/pdf`}>Download PDF</a></p>
         <p className="mt-6 text-sm text-muted">Questions about this invoice? Email <a className="link" href={`mailto:${company.email}`}>{company.email}</a> or call {company.phoneDisplay}.</p>
       </div>
     </AuthShell>

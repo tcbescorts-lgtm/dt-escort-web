@@ -15,7 +15,7 @@ export default async function Search({ searchParams }: { searchParams: Promise<{
     sb.from("loads").select("id, load_no, pickup, dropoff, load_date, status").or(`load_no.ilike.${like},pickup.ilike.${like},dropoff.ilike.${like},order_no.ilike.${like},truck_driver_name.ilike.${like}`).order("load_date", { ascending: false }).limit(15),
     sb.from("customers").select("id, company, contact_name, phone").or(`company.ilike.${like},contact_name.ilike.${like},email.ilike.${like}`).limit(10),
     sb.from("drivers").select("id, full_name, phone").or(`full_name.ilike.${like},phone.ilike.${like}`).limit(10),
-    sb.from("invoices").select("id, number, bill_to_name, total, status").or(`number.ilike.${like},bill_to_name.ilike.${like}`).limit(10),
+    sb.from("invoices").select("id, number, bill_to_name, total, status").or(`number.ilike.${like},bill_to_name.ilike.${like}`).is("archived_at", null).limit(10),
   ]);
   const groups: [string, React.ReactNode[]][] = q.length < 2 ? [] : [
     ["Loads", (loads?.data ?? []).map((l) => <Link key={l.id} href={`/portal/loads/${l.id}`} className="flex items-center justify-between gap-3 py-2 hover:underline underline-offset-4"><span>{l.load_no} · {l.pickup} to {l.dropoff} · {date(l.load_date)}</span><Badge status={l.status} label={LOAD_STATUS[l.status]} /></Link>)],

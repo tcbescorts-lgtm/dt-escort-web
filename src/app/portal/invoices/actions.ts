@@ -9,6 +9,7 @@ import { emailConfigured, emailHtml, sendEmail } from "@/lib/notify";
 import { invoicePdf } from "@/lib/invoice-pdf";
 import { SITE_URL, company } from "@/lib/site";
 import { money } from "@/lib/format";
+import { paymentLines, serviceLabel, type PaymentInfo } from "@/lib/payment-info";
 
 type Item = { kind: string; description: string; qty: number; rate: number; amount: number };
 const r2 = (v: number) => Math.round(v * 100) / 100;
@@ -51,17 +52,18 @@ export async function createInvoiceFromLoad(form: FormData) {
   };
   if (rs) {
     const legs = (await sb.from("run_sheet_legs").select("*").eq("run_sheet_id", rs.id)).data ?? [];
-    const pos = (rs.positions ?? []).map((p: string) => p.replace("_", " ")).join(", ");
-    push("mileage", `Escort mileage${pos ? ` (${pos})` : ""}`, Number(rs.total_miles), Number(rs.rate_per_mile ?? 0));
-    push("day_rate", "Day rate", legs.filter((l) => l.charged_as === "day_rate").length, Number(rs.rate_day ?? 0));
-    push("mini_run", "Mini run", legs.filter((l) => l.charged_as === "mini").length, Number(rs.rate_mini ?? 0));
+    const svc = serviceLabel(rs.positions);
+    const mileageMiles = legs.filter((l) => l.charged_as === "miles").reduce((a, l) => a + Number(l.miles ?? 0), 0) || Number(rs.total_miles);
+    push("mileage", svc, mileageMiles, Number(rs.rate_per_mile ?? 0));
+    push("day_rate", `${svc}, day rate`, legs.filter((l) => l.charged_as === "day_rate").length, Number(rs.rate_day ?? 0));
+    push("mini_run", `${svc}, mini run`, legs.filter((l) => l.charged_as === "mini").length, Number(rs.rate_mini ?? 0));
     push("overnight", "Overnight", legs.filter((l) => l.overnight).length, Number(rs.rate_overnight ?? 0));
     push("no_go", "No-go", legs.filter((l) => l.charged_as === "no_go").length, Number(rs.rate_no_go ?? 0));
-    if (rs.include_gas && Number(rs.gas_amount) > 0) push("gas", "Fuel reimbursement", 1, Number(rs.gas_amount));
-  } else if (load.rate_flat) {
-    push("flat_rate", `Escort service ${load.pickup} to ${load.dropoff}`, 1, Number(load.rate_flat));
-  } else if (load.est_miles && load.rate_per_mile) {
-    push("mileage", `Escort mileage (estimated) ${load.pickup} to ${load.dropoff}`, Number(load.est_miles), Number(load.rate_per_mile));
+    if (rs.include_gas && Number(rs.gas_amount) > 0) push("gas", "Fuel", 1, Number(rs.gas_amount));
+  } else {
+    const pos = ((await sb.from("load_positions").select("position").eq("load_id", loadId)).data ?? []).map((p) => p.position);
+    if (load.rate_flat) push("flat_rate", `${serviceLabel(pos)}, ${load.pickup} to ${load.dropoff}`, 1, Number(load.rate_flat));
+    else if (load.est_miles && load.rate_per_mile) push("mileage", serviceLabel(pos), Number(load.est_miles), Number(load.rate_per_mile));
   }
   const subtotal = r2(items.reduce((a, i) => a + i.amount, 0));
   let qp = 0;
@@ -158,9 +160,9 @@ async function loadInvoice(id: string) {
   const sb = await supabaseServer();
   const { data: inv } = await sb.from("invoices").select("*, loads(load_no, pickup, dropoff, order_no, trucking_company, truck_number)").eq("id", id).single();
   const { data: items } = await sb.from("invoice_items").select("*").eq("invoice_id", id).order("seq");
-  const { data: pay } = await sb.from("settings").select("value").eq("key", "payment_instructions").maybeSingle();
-  const { data: tpl } = await sb.from("settings").select("value").eq("key", "email_templates").maybeSingle();
-  return { sb, inv, items: items ?? [], paymentText: (pay?.value as any)?.text ?? "Pay by ACH, Zelle or CashApp.", tpl: (tpl?.value as any) ?? {} };
+  const { data: st } = await sb.from("settings").select("key, value").in("key", ["payment_instructions", "payment_info", "email_templates"]);
+  const v = Object.fromEntries((st ?? []).map((r) => [r.key, r.value])) as Record<string, any>;
+  return { sb, inv, items: items ?? [], paymentText: v.payment_instructions?.text ?? "", payInfo: (v.payment_info ?? null) as PaymentInfo | null, tpl: v.email_templates ?? {} };
 }
 
 const fill = (t: string, v: Record<string, string>) => t.replace(/\{\{(\w+)\}\}/g, (_, k) => v[k] ?? "");
@@ -170,11 +172,12 @@ export async function sendInvoice(_p: { ok?: string; error?: string } | undefine
   const id = String(form.get("id"));
   const reminder = form.get("reminder") === "1";
   if (!emailConfigured()) return { error: "Email sending isn't set up yet (Resend key missing). Download the PDF or copy the invoice link and send it yourself, then mark it Sent." };
-  const { sb, inv, items, paymentText, tpl } = await loadInvoice(id);
+  const { sb, inv, items, paymentText, payInfo, tpl } = await loadInvoice(id);
   if (!inv) return { error: "Invoice not found." };
   if (!inv.bill_to_email) return { error: "Add a bill-to email first." };
   if (!items.length) return { error: "Add at least one line item first." };
-  const pdf = await invoicePdf(inv, items, inv.loads, paymentText);
+  const pdf = await invoicePdf(inv, items, inv.loads, payInfo, paymentText);
+  const howToPay = paymentLines(payInfo).map((m) => `${m.label}: ${m.lines.join(", ")}`);
   const link = `${SITE_URL}/i/${inv.public_token}`;
   const vars = { number: inv.number, name: inv.bill_to_name, load: inv.loads?.load_no ?? "", total: money(inv.total), due: inv.due_date ?? "on receipt", link };
   const subject = (reminder ? "Reminder: " : "") + fill(tpl.invoice_subject ?? "Invoice {{number}} from D & T Escort Service", vars);
@@ -184,11 +187,11 @@ export async function sendInvoice(_p: { ok?: string; error?: string } | undefine
     subject,
     html: emailHtml({
       heading: `${reminder ? "Reminder: invoice" : "Invoice"} ${inv.number}`,
-      paragraphs: body.split(/\n\n+/),
+      paragraphs: [...body.split(/\n\n+/), ...(howToPay.length ? ["How to pay:", ...howToPay] : [])],
       button: { href: inv.stripe_payment_link_url ?? link, label: inv.stripe_payment_link_url ? "Pay online" : "View invoice" },
       reason: `You're receiving this because ${company.name} provided escort services billed to ${inv.bill_to_name}.`,
     }),
-    text: body,
+    text: [body, howToPay.length ? "How to pay:\n" + howToPay.join("\n") : ""].filter(Boolean).join("\n\n"),
     attachments: [{ filename: `${inv.number}.pdf`, content: Buffer.from(pdf) }],
     tags: [{ name: "invoice_id", value: inv.id }],
   });
@@ -269,4 +272,23 @@ export async function setInvoiceStatus(form: FormData) {
   if (status === "sent") patch.sent_at = new Date().toISOString();
   await sb.from("invoices").update(patch).eq("id", id);
   revalidatePath(`/portal/invoices/${id}`);
+}
+
+export async function archiveInvoice(_p: { ok?: string; error?: string } | undefined, form: FormData) {
+  await requireStaff();
+  const sb = await supabaseServer();
+  const id = String(form.get("id"));
+  const { error } = await sb.rpc("archive_invoice", { p_id: id, p_confirm: String(form.get("confirm") ?? ""), p_reason: String(form.get("reason") ?? "") });
+  if (error) return { error: error.message };
+  revalidatePath("/portal/invoices");
+  redirect("/portal/invoices?archived=1");
+}
+
+export async function restoreInvoice(form: FormData) {
+  await requireStaff();
+  const sb = await supabaseServer();
+  const id = String(form.get("id"));
+  await sb.rpc("restore_invoice", { p_id: id });
+  revalidatePath("/portal/invoices");
+  redirect(`/portal/invoices/${id}`);
 }

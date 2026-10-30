@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RouteMap from "@/components/portal/RouteMap";
 import { notFound } from "next/navigation";
 import { requireDriver } from "@/lib/auth";
 import { supabaseServer } from "@/lib/supabase/server";
@@ -17,7 +18,6 @@ export default async function DriverLoad({ params }: { params: Promise<{ id: str
   if (!l) notFound();
   const { data: a } = await sb.from("load_assignments").select("position, acknowledged_at").eq("load_id", id).eq("driver_id", me.driverId).single();
   const { data: rs } = await sb.from("run_sheets").select("status").eq("load_id", id).eq("driver_id", me.driverId).maybeSingle();
-  const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY;
   const origin = l.empty_at || l.pickup || "";
   const dir = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(l.dropoff ?? "")}${l.empty_at && l.pickup ? `&waypoints=${encodeURIComponent(l.pickup)}` : ""}&travelmode=driving`;
   const tel = (p: string) => `tel:${p.replace(/[^\d+]/g, "")}`;
@@ -62,10 +62,7 @@ export default async function DriverLoad({ params }: { params: Promise<{ id: str
         <p>Pick up: {l.pickup}</p>
         <p>Drop off: {l.dropoff}</p>
         {l.est_miles && <p className="text-muted">About {l.est_miles} loaded miles</p>}
-        {key && (
-          <iframe title={`Route from ${l.pickup} to ${l.dropoff}`} className="mt-3 aspect-[4/3] w-full rounded-md border border-rule" loading="lazy" referrerPolicy="strict-origin-when-cross-origin"
-            src={`https://www.google.com/maps/embed/v1/directions?key=${key}&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(l.dropoff ?? "")}&mode=driving`} />
-        )}
+        {origin && l.dropoff && <div className="mt-3"><RouteMap from={origin} to={l.dropoff} height={300} /></div>}
         <a href={dir} target="_blank" rel="noopener noreferrer" className="btn btn-line mt-3 w-full">Open in Google Maps<span className="sr-only"> (opens the Maps app)</span></a>
         <p className="mt-2 text-sm text-muted">Always follow the permitted route, not the map&apos;s suggestion.</p>
       </section>

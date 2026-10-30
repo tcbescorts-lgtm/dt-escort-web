@@ -39,7 +39,7 @@ export default function CookieBanner() {
   return (
     <section
       aria-labelledby="cookie-heading"
-      className="fixed z-40 left-20 right-3 bottom-4 md:left-auto md:right-6 md:bottom-6 md:max-w-md rounded-lg border border-field bg-surface p-4 pr-16 shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
+      className="fixed z-40 left-3 right-20 bottom-4 md:left-6 md:right-auto md:bottom-6 md:max-w-md rounded-lg border border-field bg-surface p-4 pr-16 shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
     >
       <h2 id="cookie-heading" ref={headingRef} tabIndex={-1} className="font-semibold text-base mb-1">
         Cookies on this site

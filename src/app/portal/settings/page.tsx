@@ -6,6 +6,8 @@ import { DEFAULT_EXTRAS } from "@/lib/runsheet-data";
 import { company, fullAddress } from "@/lib/site";
 import { POSITIONS } from "@/lib/format";
 import { saveSettings } from "./actions";
+import { EMPTY_PAYMENT_INFO } from "@/lib/payment-info";
+import { setupStatus } from "@/lib/setup";
 
 export const metadata = { title: "Settings" };
 
@@ -24,6 +26,8 @@ export default async function Settings({ searchParams }: { searchParams: Promise
   const v = Object.fromEntries((data ?? []).map((r) => [r.key, r.value])) as Record<string, any>;
   const extras = { ...DEFAULT_EXTRAS, ...(v.run_sheet_extras ?? {}) };
   const rates = v.default_rates ?? {};
+  const pi = { ...EMPTY_PAYMENT_INFO, ...(v.payment_info ?? {}) };
+  const setup = setupStatus(v);
 
   return (
     <>
@@ -35,7 +39,36 @@ export default async function Settings({ searchParams }: { searchParams: Promise
         <Link href="/portal/settings/deletion" className="btn btn-line">Data deletion queue</Link>
       </nav>
 
+      <Panel title="✅ Setup checklist" id="setup" className="mb-4">
+        <ul className="grid gap-x-6 gap-y-1.5 text-sm md:grid-cols-2">
+          {setup.map((x) => (
+            <li key={x.name} className="flex gap-2">
+              <span aria-hidden="true">{x.ok ? "✅" : "⬜"}</span>
+              <span><span className="font-semibold">{x.name}</span><span className="sr-only">{x.ok ? " (done)" : " (not set up)"}</span>{!x.ok && <span className="block text-muted">{x.todo}</span>}</span>
+            </li>
+          ))}
+        </ul>
+      </Panel>
+
       <div className="grid gap-4 xl:grid-cols-2">
+        <Panel title="💵 Payment details on invoices" id="pay" className="xl:col-span-2">
+          <form action={saveSettings} className="grid grid-cols-2 gap-x-3 gap-y-2 lg:grid-cols-4">
+            <input type="hidden" name="section" value="payment" />
+            <F name="zelle" label="Zelle (email or phone)" defaultValue={pi.zelle} />
+            <F name="cashapp" label="Cash App $cashtag" defaultValue={pi.cashapp} placeholder="$DTEscort" />
+            <F name="check_payable" label="Checks payable to" defaultValue={pi.check_payable} />
+            <F name="check_mail" label="Mail checks to" defaultValue={pi.check_mail} />
+            <F name="ach_name" label="ACH account name" defaultValue={pi.ach_name} />
+            <F name="ach_bank" label="Bank name" defaultValue={pi.ach_bank} />
+            <F name="ach_routing" label="Routing number" defaultValue={pi.ach_routing} inputMode="numeric" />
+            <F name="ach_account" label="Account number" defaultValue={pi.ach_account} inputMode="numeric" />
+            <F name="online_fee_note" label="Online payment note" defaultValue={pi.online_fee_note} className="col-span-2" placeholder="A card fee applies when paid online." />
+            <TA name="other" label="Other ways to pay (one per line)" defaultValue={pi.other} rows={2} className="col-span-2" />
+            <p className="col-span-2 text-sm text-muted lg:col-span-4">Everything filled in here prints on every invoice PDF, the online invoice and the invoice email, the same way the sample invoice lists Zelle and ACH. Leave a box empty to hide it.</p>
+            <div className="col-span-2 lg:col-span-4"><button className="btn btn-gold">Save payment details</button></div>
+          </form>
+        </Panel>
+
         <Panel title="Company profile" id="co">
           <p>{company.legalName}<br />{fullAddress}<br />{company.phoneDisplay} · {company.email}</p>
           <p className="mt-2 text-sm text-muted">Company details and the legal pages live in the website code (src/lib/site.ts) so the public site and invoices always match. Ask your developer to change them.</p>
@@ -66,8 +99,8 @@ export default async function Settings({ searchParams }: { searchParams: Promise
         <Panel title="Billing" id="bl">
           <form action={saveSettings} className="space-y-3">
             <input type="hidden" name="section" value="billing" />
-            <TA name="payment_text" label="Payment instructions on invoices" defaultValue={v.payment_instructions?.text} rows={3}
-              hint="Shown on every invoice. Give Zelle/CashApp handles if you like, but never full bank account numbers." />
+            <TA name="payment_text" label="Fallback payment note" defaultValue={v.payment_instructions?.text} rows={2}
+              hint="Only used when no payment details are filled in above." />
             <F name="terms_days" label="Default days until due" type="number" defaultValue={v.invoice_terms_days ?? 14} />
             <button className="btn btn-gold">Save billing</button>
           </form>

@@ -5,6 +5,7 @@ import { supabaseServer } from "@/lib/supabase/server";
 import { Badge, Flash, PageHead, Panel } from "@/components/portal/ui";
 import { INVOICE_STATUS, LOAD_STATUS, PARTY, POSITIONS, date, dateTime, money } from "@/lib/format";
 import LoadForm from "../LoadForm";
+import RouteMap from "@/components/portal/RouteMap";
 import { loadFormData } from "../data";
 import { assignDriver, setLoadStatus, unassignDriver } from "../actions";
 import { createInvoiceFromLoad } from "../../invoices/actions";
@@ -18,7 +19,7 @@ export default async function LoadDetail({ params, searchParams }: { params: Pro
   const sb = await supabaseServer();
   const { data: load } = await sb
     .from("loads")
-    .select("*, customer:customers!loads_customer_id_fkey(*), invoice_customer:customers!loads_invoice_customer_id_fkey(*), load_positions(position), load_assignments(id, driver_id, position, acknowledged_at, drivers(full_name, phone)), run_sheets(id, status, total_due, driver_id, drivers(full_name)), invoices(id, number, status, total)")
+    .select("*, customer:customers!loads_customer_id_fkey(*), invoice_customer:customers!loads_invoice_customer_id_fkey(*), load_positions(position), load_assignments(id, driver_id, position, acknowledged_at, drivers(full_name, phone)), run_sheets(id, status, total_due, driver_id, drivers(full_name)), invoices(id, number, status, total, archived_at)")
     .eq("id", id)
     .single();
   if (!load) notFound();
@@ -109,9 +110,15 @@ export default async function LoadDetail({ params, searchParams }: { params: Pro
           )}
         </Panel>
 
+        {l.pickup && l.dropoff && (
+          <Panel title="🛣️ Route" id="rt" className="xl:col-span-2">
+            <RouteMap from={l.pickup} to={l.dropoff} />
+          </Panel>
+        )}
+
         <Panel title="Invoices" id="inv">
-          {l.invoices.length > 0 && (
-            <ul className="mb-3 divide-y divide-rule">{l.invoices.map((i: any) => (
+          {l.invoices.filter((i: any) => !i.archived_at).length > 0 && (
+            <ul className="mb-3 divide-y divide-rule">{l.invoices.filter((i: any) => !i.archived_at).map((i: any) => (
               <li key={i.id} className="flex items-center justify-between py-2">
                 <Link href={`/portal/invoices/${i.id}`} className="link">{i.number}</Link>
                 <span className="flex items-center gap-2">{money(i.total)} <Badge status={i.status} label={INVOICE_STATUS[i.status]} /></span>

@@ -13,9 +13,10 @@ export const dynamic = "force-dynamic";
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const me = await requireStaff();
   const sb = await supabaseServer();
-  const [{ count: unread }, { count: pendingSheets }] = await Promise.all([
+  const [{ count: unread }, { count: pendingSheets }, { count: unreadComms }] = await Promise.all([
     sb.from("notifications").select("id", { count: "exact", head: true }).is("read_at", null),
     sb.from("run_sheets").select("id", { count: "exact", head: true }).eq("status", "submitted"),
+    sb.from("comms").select("id", { count: "exact", head: true }).is("read_at", null),
   ]);
 
   return (
@@ -28,7 +29,7 @@ export default async function PortalLayout({ children }: { children: React.React
           </Link>
           <div className="ml-auto flex items-center gap-2 lg:hidden"><ThemeToggle /></div>
         </div>
-        <PortalNav role={me.role} unread={unread ?? 0} pendingSheets={pendingSheets ?? 0} />
+        <PortalNav role={me.role} unread={unread ?? 0} pendingSheets={pendingSheets ?? 0} unreadComms={unreadComms ?? 0} />
       </aside>
       <div className="min-w-0">
         <div className="hidden items-center justify-end gap-3 border-b border-rule px-6 py-2 lg:flex">
