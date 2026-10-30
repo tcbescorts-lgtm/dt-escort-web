@@ -1,5 +1,8 @@
 "use server";
 
+import { pushToStaff } from "@/lib/notify";
+import { SITE_URL } from "@/lib/site";
+
 import { revalidatePath } from "next/cache";
 import { getMe } from "@/lib/auth";
 import { supabaseServer } from "@/lib/supabase/server";
@@ -157,6 +160,15 @@ export async function saveRunSheet(_p: RSState, form: FormData): Promise<RSState
   }
 
   const event = intent === "submit" ? "submitted" : intent === "approve" ? "approved" : "saved";
+  if (intent === "submit" && !staff) {
+    const { data: info } = await sb.from("run_sheets").select("total_due, loads(load_no, pickup, dropoff), drivers(full_name)").eq("id", id!).single();
+    const i: any = info ?? {};
+    await pushToStaff({
+      title: `📝 Run sheet from ${i.drivers?.full_name ?? "a driver"}`,
+      body: `${i.loads?.load_no ?? ""} ${i.loads?.pickup ?? ""} to ${i.loads?.dropoff ?? ""} · $${Number(i.total_due ?? 0).toFixed(2)}`.trim(),
+      url: `${SITE_URL}/portal/run-sheets/${id}`,
+    }).catch(() => {});
+  }
   await sb.from("run_sheet_events").insert({ run_sheet_id: id, actor: me.id, event, comment: staff ? s(form, "admin_comment") : null });
 
   revalidatePath("/driver", "layout");

@@ -103,3 +103,10 @@ export async function alertDriverAssigned(driverId: string, loadId: string) {
     });
   }
 }
+
+/** Phone/desktop push to every owner and admin (the in-app notification row comes from a database trigger). */
+export async function pushToStaff(payload: { title: string; body: string; url: string }) {
+  const admin = supabaseAdmin();
+  const { data } = await admin.from("profiles").select("id").in("role", ["owner", "admin"]).eq("active", true);
+  await Promise.all((data ?? []).map((p) => pushToUser(p.id, payload)));
+}

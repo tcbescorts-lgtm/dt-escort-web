@@ -5,6 +5,7 @@ import { requireStaff } from "@/lib/auth";
 import { supabaseServer } from "@/lib/supabase/server";
 import ThemeToggle from "@/components/ThemeToggle";
 import PortalNav from "./PortalNav";
+import LivePopups from "@/components/portal/LivePopups";
 import { signOut } from "@/app/login/actions";
 
 export const metadata: Metadata = { title: { default: "Portal", template: "%s | D & T Portal" }, robots: { index: false } };
@@ -42,6 +43,7 @@ export default async function PortalLayout({ children }: { children: React.React
           <form action={signOut}><button className="btn btn-line !min-h-9 !py-1 text-sm">Sign out</button></form>
           <ThemeToggle />
         </div>
+        <LivePopups />
         <main id="main" tabIndex={-1} className="px-4 py-5 focus:outline-none md:px-6">{children}</main>
       </div>
     </div>

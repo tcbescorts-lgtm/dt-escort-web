@@ -125,8 +125,17 @@ export async function saveInvoice(_p: { ok?: string; error?: string } | undefine
     return { error: "Couldn't read the line items." };
   }
   items = items
-    .filter((i) => i.description?.trim() || Number(i.amount))
+    .filter((i) => i.kind !== "discount" && (i.description?.trim() || Number(i.qty) * Number(i.rate)))
     .map((i) => ({ kind: i.kind || "adjustment", description: i.description.trim(), qty: Number(i.qty) || 0, rate: Number(i.rate) || 0, amount: r2((Number(i.qty) || 0) * (Number(i.rate) || 0)) }));
+  // Discount: percent of the service lines (before any quick pay fee), or a fixed dollar amount.
+  const dType = form.get("discount_type") === "percent" ? "percent" : form.get("discount_type") === "amount" ? "amount" : null;
+  const dValue = Math.max(0, Number(String(form.get("discount_value") ?? "").replace(/[$,%]/g, "")) || 0);
+  if (dType && dValue > 0) {
+    const base = items.filter((i) => i.kind !== "qp_fee").reduce((a, i) => a + i.amount, 0);
+    if (dType === "percent" && dValue > 100) return { error: "A percent discount can't be more than 100%." };
+    const off = r2(dType === "percent" ? (base * dValue) / 100 : Math.min(dValue, base));
+    if (off > 0) items.push({ kind: "discount", description: dType === "percent" ? `Discount (${dValue}%)` : "Discount", qty: 1, rate: -off, amount: -off });
+  }
   const qp = r2(-items.filter((i) => i.kind === "qp_fee").reduce((a, i) => a + i.amount, 0));
   const total = r2(items.reduce((a, i) => a + i.amount, 0));
   const email = String(form.get("bill_to_email") ?? "").trim() || null;
@@ -139,6 +148,8 @@ export async function saveInvoice(_p: { ok?: string; error?: string } | undefine
       issue_date: String(form.get("issue_date")),
       due_date: (form.get("due_date") as string) || null,
       notes: String(form.get("notes") ?? "").trim() || null,
+      discount_type: dType && dValue > 0 ? dType : null,
+      discount_value: dType && dValue > 0 ? dValue : null,
       subtotal: r2(total + qp),
       qp_fee: qp,
       total,

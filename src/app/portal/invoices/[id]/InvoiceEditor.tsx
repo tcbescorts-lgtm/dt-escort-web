@@ -21,9 +21,18 @@ export default function InvoiceEditor({ inv, items, publicUrl, mailto, hasPayInf
   const [sendState, sendAction, sending] = useActionState(sendInvoice, undefined);
   const [linkState, linkAction, linking] = useActionState(createPaymentLink, undefined);
   const [payState, payAction, paying] = useActionState(recordPayment, undefined);
-  const [rows, setRows] = useState<Item[]>(() => items.map((i) => ({ key: k(), kind: i.kind, description: i.description, qty: String(i.qty), rate: String(i.rate) })));
+  const [rows, setRows] = useState<Item[]>(() => items.filter((i) => i.kind !== "discount").map((i) => ({ key: k(), kind: i.kind, description: i.description, qty: String(i.qty), rate: String(i.rate) })));
+  const [dType, setDType] = useState<string>(inv.discount_type ?? "");
+  const [dValue, setDValue] = useState<string>(inv.discount_value != null ? String(inv.discount_value) : "");
   const [copied, setCopied] = useState(false);
-  const total = useMemo(() => rows.reduce((a, r) => a + Math.round((Number(r.qty) || 0) * (Number(r.rate) || 0) * 100) / 100, 0), [rows]);
+  const lineSum = useMemo(() => rows.reduce((a, r) => a + Math.round((Number(r.qty) || 0) * (Number(r.rate) || 0) * 100) / 100, 0), [rows]);
+  const discount = useMemo(() => {
+    const v = Math.max(0, Number(dValue) || 0);
+    const base = rows.filter((r) => r.kind !== "qp_fee").reduce((a, r) => a + (Number(r.qty) || 0) * (Number(r.rate) || 0), 0);
+    if (!dType || !v) return 0;
+    return Math.round((dType === "percent" ? (base * Math.min(v, 100)) / 100 : Math.min(v, base)) * 100) / 100;
+  }, [rows, dType, dValue]);
+  const total = lineSum - discount;
   const set = (key: string, p: Partial<Item>) => setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...p } : r)));
   const locked = inv.status === "void";
 
@@ -54,6 +63,16 @@ export default function InvoiceEditor({ inv, items, publicUrl, mailto, hasPayInf
                   <td className="p-2"><button type="button" className="min-h-11 text-sm text-muted underline-offset-4 hover:underline" onClick={() => setRows((rs) => rs.filter((x) => x.key !== r.key))}>Remove<span className="sr-only"> line {i + 1}</span></button></td>
                 </tr>
               ))}
+              <tr className="border-t border-rule">
+                <th scope="row" colSpan={2} className="p-2 text-right font-semibold">Discount</th>
+                <td className="p-2"><label className="sr-only" htmlFor="dtype">Discount type</label>
+                  <select id="dtype" name="discount_type" className="input !min-h-11" value={dType} onChange={(e) => setDType(e.target.value)}>
+                    <option value="">None</option><option value="percent">Percent (%)</option><option value="amount">Amount ($)</option>
+                  </select></td>
+                <td className="p-2"><label className="sr-only" htmlFor="dval">Discount value</label>
+                  <input id="dval" name="discount_value" type="number" step="0.01" min="0" className="input !min-h-11 w-28" value={dValue} disabled={!dType} onChange={(e) => setDValue(e.target.value)} placeholder={dType === "percent" ? "10" : "50.00"} /></td>
+                <td className="p-2 text-right tabular-nums">{discount ? `-${money(discount)}` : money(0)}</td><td />
+              </tr>
               <tr className="border-t-2 border-field"><th scope="row" colSpan={4} className="p-2 text-right text-lg">Total</th><td className="p-2 text-right text-lg font-bold tabular-nums">{money(total)}</td><td /></tr>
             </tbody>
           </table>
