@@ -17,9 +17,9 @@ export const company = {
   postalCode: "39212",
   country: "US",
   email: "dtescortservice@gmail.com",
-  phoneDisplay: "(346) 675-6900",
-  phoneE164: "+13466756900",
-  telHref: "tel:+13466756900",
+  phoneDisplay: "(601) 706-3404",
+  phoneE164: "+16017063404",
+  telHref: "tel:+16017063404",
   hours: "Dispatch answers 24 hours a day, 7 days a week",
 } as const;
 

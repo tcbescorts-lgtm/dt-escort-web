@@ -52,7 +52,7 @@ export default async function DriverLoad({ params }: { params: Promise<{ id: str
               <a href={tel(c.phone)} className="btn btn-line mt-1 w-full justify-start"><PhoneIcon /> {c.contact_name || c.company} · {c.phone}</a>
               <p className="mt-1 text-sm text-muted">{c.company}</p></li>
           )}
-          <li><a href="tel:+13466756900" className="btn btn-line w-full justify-start"><PhoneIcon /> Dispatch · (346) 675-6900</a></li>
+          <li><a href="tel:+16017063404" className="btn btn-line w-full justify-start"><PhoneIcon /> Dispatch · (601) 706-3404</a></li>
         </ul>
       </section>
 

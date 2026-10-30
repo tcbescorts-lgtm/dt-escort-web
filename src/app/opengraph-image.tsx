@@ -19,7 +19,7 @@ export default async function OgImage() {
         <div style={{ display: "flex", flexDirection: "column", color: "#f5f1e6" }}>
           <div style={{ fontSize: 84, lineHeight: 0.95 }}>Pilot car escorts for oversize loads</div>
           <div style={{ fontSize: 44, color: "#d4af37", marginTop: 28 }}>All 48 states · Dispatch 24/7</div>
-          <div style={{ fontSize: 40, color: "#b9b4a6", marginTop: 16 }}>(346) 675-6900</div>
+          <div style={{ fontSize: 40, color: "#b9b4a6", marginTop: 16 }}>(601) 706-3404</div>
         </div>
       </div>
     ),

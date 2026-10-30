@@ -863,7 +863,7 @@ create policy storage_driver_insert on storage.objects for insert to authenticat
 
 -- ---------------------------------------------------------------- defaults
 insert into public.settings(key, value) values
-  ('company', '{"name":"D & T Escort Service LLC","address":"3897 I-55 S, Jackson, MS 39212","phone":"(346) 675-6900","email":"dtescortservice@gmail.com"}'),
+  ('company', '{"name":"D & T Escort Service LLC","address":"3897 I-55 S, Jackson, MS 39212","phone":"(601) 706-3404","email":"dtescortservice@gmail.com"}'),
   ('booked_by', '["Jim","Boss"]'),
   ('positions', '["lead","chase","high_pole","steer","route_survey","third_car"]'),
   ('default_rates', '{"per_mile":null,"day_rate":null,"overnight":null,"no_go":null,"mini_run":null,"flat_rate":null}'),
